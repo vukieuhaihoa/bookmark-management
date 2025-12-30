@@ -9,7 +9,7 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
 )
 
-func TestPasswordEndpoint(t *testing.T) {
+func TestHealthCheckEndpoint(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -17,20 +17,20 @@ func TestPasswordEndpoint(t *testing.T) {
 
 		setupTestHTTP func(api api.Engine) *httptest.ResponseRecorder
 
-		expectedStatusCode     int
-		expectedResponseLength int
+		expectedStatusCode   int
+		expectedResponseBody string
 	}{
 		{
-			name: "Generate password successfully",
+			name: "Health check returns OK status",
 
 			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
-				req := httptest.NewRequest("GET", "/generate-password", nil)
+				req := httptest.NewRequest("GET", "/health-check", nil)
 				respRec := httptest.NewRecorder()
 				api.ServeHTTP(respRec, req)
 				return respRec
 			},
-			expectedStatusCode:     http.StatusOK,
-			expectedResponseLength: 12,
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"message":"OK","service_name":"bookmark-service","instance_id":"test_instance_id_1"}`,
 		},
 	}
 
@@ -38,12 +38,15 @@ func TestPasswordEndpoint(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			apiEngine := api.New(&api.Config{})
+			apiEngine := api.New(&api.Config{
+				ServiceName: "bookmark-service",
+				InstanceID:  "test_instance_id_1",
+			})
 
 			respRec := tc.setupTestHTTP(apiEngine)
 
 			assert.Equal(t, tc.expectedStatusCode, respRec.Code)
-			assert.Equal(t, tc.expectedResponseLength, respRec.Body.Len())
+			assert.JSONEq(t, tc.expectedResponseBody, respRec.Body.String())
 		})
 	}
 }
