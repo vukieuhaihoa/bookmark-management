@@ -1,0 +1,11 @@
+# Editor/IDE
+.idea/
+.vscode/
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
