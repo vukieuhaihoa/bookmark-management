@@ -5,3 +5,7 @@ start:
 .PHONY: mock-gen
 mock-gen:
 	go generate ./...
+
+.PHONY: test
+test:
+	go test -v ./...

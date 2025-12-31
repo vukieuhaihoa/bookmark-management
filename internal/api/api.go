@@ -78,5 +78,12 @@ func (a *api) registerRoutes() {
 	passSvc := service.NewPassword()
 	passHandler := handler.NewPassword(passSvc)
 
+	healthCheckSvc := service.NewHealthCheck(a.cfg.ServiceName, a.cfg.InstanceID)
+	healthCheckHandler := handler.NewHealthCheck(healthCheckSvc)
+
+	// Register health check endpoint
+	a.app.GET("/health-check", healthCheckHandler.Check)
+
+	// Register password generation endpoint
 	a.app.GET("/generate-password", passHandler.GeneratePassword)
 }
