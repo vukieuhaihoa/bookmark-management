@@ -6,7 +6,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "github.com/vukieuhaihoa/bookmark-management/docs"
 	"github.com/vukieuhaihoa/bookmark-management/internal/handler"
+	"github.com/vukieuhaihoa/bookmark-management/internal/repository"
 	"github.com/vukieuhaihoa/bookmark-management/internal/service"
 )
 
@@ -33,6 +39,9 @@ type api struct {
 
 	// cfg holds the configuration settings for the API server
 	cfg *Config
+
+	// redisClient is the Redis client used for caching and session management
+	redisClient *redis.Client
 }
 
 // New creates a new instance of the API server engine.
@@ -40,14 +49,17 @@ type api struct {
 //
 // Parameters:
 //   - cfg: The configuration settings for the API server
+//   - redisClient: The Redis client used for caching and session management
 //
 // Returns:
 //   - Engine: The initialized API server engine instance
-func New(cfg *Config) Engine {
+func New(cfg *Config, redisClient *redis.Client) Engine {
 	a := &api{
-		app: gin.New(),
-		cfg: cfg,
+		app:         gin.New(),
+		cfg:         cfg,
+		redisClient: redisClient,
 	}
+
 	a.registerRoutes()
 	return a
 }
@@ -75,10 +87,12 @@ func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // This method initializes services and handlers, then registers them with the Gin engine.
 // Currently registers the password generation endpoint.
 func (a *api) registerRoutes() {
+	healthCheckRepo := repository.NewHealthCheck(a.redisClient)
+
 	passSvc := service.NewPassword()
 	passHandler := handler.NewPassword(passSvc)
 
-	healthCheckSvc := service.NewHealthCheck(a.cfg.ServiceName, a.cfg.InstanceID)
+	healthCheckSvc := service.NewHealthCheck(a.cfg.ServiceName, a.cfg.InstanceID, healthCheckRepo)
 	healthCheckHandler := handler.NewHealthCheck(healthCheckSvc)
 
 	// Register health check endpoint
@@ -86,4 +100,6 @@ func (a *api) registerRoutes() {
 
 	// Register password generation endpoint
 	a.app.GET("/generate-password", passHandler.GeneratePassword)
+
+	a.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

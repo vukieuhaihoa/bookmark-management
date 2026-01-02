@@ -1,0 +1,82 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "This is the API documentation for the Bookmark Management service.",
+        "title": "Bookmark Management API",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.example.com/support",
+            "email": "author@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/generate-password": {
+            "get": {
+                "description": "Generates a cryptographically secure random password of fixed length.",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "password"
+                ],
+                "summary": "Generate a random password",
+                "responses": {
+                    "200": {
+                        "description": "w7h3Q9FeXskn",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/health-check": {
+            "get": {
+                "description": "Performs a health check and returns the service status.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health Check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.healthCheckResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handler.healthCheckResponse": {
+            "type": "object",
+            "properties": {
+                "instance_id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "service_name": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

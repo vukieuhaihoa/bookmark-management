@@ -18,6 +18,11 @@ type passwordHandler struct {
 // It provides methods for handling password generation requests using different
 // web frameworks (Gin and standard library mux).
 type Password interface {
+	// GeneratePassword is a Gin framework handler that generates a random password.
+	// It processes HTTP requests and returns the generated password or an error.
+	//
+	// Parameters:
+	//   - c: The Gin context containing the HTTP request and response
 	GeneratePassword(c *gin.Context)
 }
 
@@ -44,6 +49,14 @@ func NewPassword(svc service.Password) Password {
 // Response:
 //   - 200 OK: Returns the generated password as plain text
 //   - 500 Internal Server Error: Returns an error message if password generation fails
+//
+// @Summary Generate a random password
+// @Description Generates a cryptographically secure random password of fixed length.
+// @Tags password
+// @Produce plain
+// @Success 200 {object} string "w7h3Q9FeXskn"
+// @Failure 500 {object} string "Internal Server Error"
+// @Router /generate-password [get]
 func (h *passwordHandler) GeneratePassword(c *gin.Context) {
 	pass, err := h.svc.GeneratePassword()
 	if err != nil {

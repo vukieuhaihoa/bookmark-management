@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
+	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
 )
 
 func TestHealthCheckEndpoint(t *testing.T) {
@@ -41,7 +42,7 @@ func TestHealthCheckEndpoint(t *testing.T) {
 			apiEngine := api.New(&api.Config{
 				ServiceName: "bookmark-service",
 				InstanceID:  "test_instance_id_1",
-			})
+			}, redisPkg.InitMockRedis(t))
 
 			respRec := tc.setupTestHTTP(apiEngine)
 
