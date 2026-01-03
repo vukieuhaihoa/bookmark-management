@@ -59,7 +59,7 @@ func NewHealthCheck(svc service.HealthCheck) HealthCheck {
 // @Tags health
 // @Produce json
 // @Success 200 {object} healthCheckResponse
-// @Router /health-check [get]
+// @Router /v1/health-check [get]
 func (h *healthCheckHandler) Check(c *gin.Context) {
 	message, serviceName, instanceID, err := h.svc.Check(c)
 	if err != nil {

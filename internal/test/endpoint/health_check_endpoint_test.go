@@ -25,7 +25,7 @@ func TestHealthCheckEndpoint(t *testing.T) {
 			name: "Health check returns OK status",
 
 			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
-				req := httptest.NewRequest("GET", "/health-check", nil)
+				req := httptest.NewRequest("GET", "/v1/health-check", nil)
 				respRec := httptest.NewRecorder()
 				api.ServeHTTP(respRec, req)
 				return respRec

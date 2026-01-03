@@ -1,5 +1,10 @@
 basePath: /
 definitions:
+  handler.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
   handler.healthCheckResponse:
     properties:
       instance_id:
@@ -7,6 +12,23 @@ definitions:
       message:
         type: string
       service_name:
+        type: string
+    type: object
+  handler.shortenURLRequest:
+    properties:
+      exp:
+        type: integer
+      url:
+        type: string
+    required:
+    - exp
+    - url
+    type: object
+  handler.shortenURLResponse:
+    properties:
+      code:
+        type: string
+      message:
         type: string
     type: object
 host: localhost:8080
@@ -19,7 +41,7 @@ info:
   title: Bookmark Management API
   version: "1.0"
 paths:
-  /generate-password:
+  /v1/generate-password:
     get:
       description: Generates a cryptographically secure random password of fixed length.
       produces:
@@ -36,7 +58,7 @@ paths:
       summary: Generate a random password
       tags:
       - password
-  /health-check:
+  /v1/health-check:
     get:
       description: Performs a health check and returns the service status.
       produces:
@@ -49,6 +71,36 @@ paths:
       summary: Health Check
       tags:
       - health
+  /v1/links/shorten:
+    post:
+      consumes:
+      - application/json
+      description: Shortens a given URL and returns a unique code.
+      parameters:
+      - description: URL to shorten
+        in: body
+        name: shortenURLRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handler.shortenURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.shortenURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Shorten a URL
+      tags:
+      - URL
 schemes:
 - http
 swagger: "2.0"

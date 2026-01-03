@@ -14,6 +14,7 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/handler"
 	"github.com/vukieuhaihoa/bookmark-management/internal/repository"
 	"github.com/vukieuhaihoa/bookmark-management/internal/service"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/stringutils"
 )
 
 // Engine defines the contract for the HTTP server engine.
@@ -42,6 +43,9 @@ type api struct {
 
 	// redisClient is the Redis client used for caching and session management
 	redisClient *redis.Client
+
+	// randomCodeGen is the code generator used for generating random codes
+	randomCodeGen stringutils.CodeGenerator
 }
 
 // New creates a new instance of the API server engine.
@@ -55,9 +59,10 @@ type api struct {
 //   - Engine: The initialized API server engine instance
 func New(cfg *Config, redisClient *redis.Client) Engine {
 	a := &api{
-		app:         gin.New(),
-		cfg:         cfg,
-		redisClient: redisClient,
+		app:           gin.New(),
+		cfg:           cfg,
+		redisClient:   redisClient,
+		randomCodeGen: stringutils.NewCodeGenerator(),
 	}
 
 	a.registerRoutes()
@@ -89,17 +94,28 @@ func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (a *api) registerRoutes() {
 	healthCheckRepo := repository.NewHealthCheck(a.redisClient)
 
-	passSvc := service.NewPassword()
+	passSvc := service.NewPassword(a.randomCodeGen)
 	passHandler := handler.NewPassword(passSvc)
 
 	healthCheckSvc := service.NewHealthCheck(a.cfg.ServiceName, a.cfg.InstanceID, healthCheckRepo)
 	healthCheckHandler := handler.NewHealthCheck(healthCheckSvc)
 
-	// Register health check endpoint
-	a.app.GET("/health-check", healthCheckHandler.Check)
+	shortenURLRepo := repository.NewUrlStorage(a.redisClient)
+	shortenURLSvc := service.NewShortenURL(shortenURLRepo, a.randomCodeGen)
+	shortenURLHandler := handler.NewShortenURL(shortenURLSvc)
+	v1 := a.app.Group("/v1")
+	{
+		// Register health check endpoint
+		v1.GET("/health-check", healthCheckHandler.Check)
 
-	// Register password generation endpoint
-	a.app.GET("/generate-password", passHandler.GeneratePassword)
+		// Register password generation endpoint
+		v1.GET("/generate-password", passHandler.GeneratePassword)
 
-	a.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		// Register URL shortening endpoint
+		v1.POST("/links/shorten", shortenURLHandler.ShortenURL)
+
+		// Register Swagger documentation endpoint
+		v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
+
 }

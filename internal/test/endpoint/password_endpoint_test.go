@@ -25,7 +25,7 @@ func TestPasswordEndpoint(t *testing.T) {
 			name: "Generate password successfully",
 
 			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
-				req := httptest.NewRequest("GET", "/generate-password", nil)
+				req := httptest.NewRequest("GET", "/v1/generate-password", nil)
 				respRec := httptest.NewRecorder()
 				api.ServeHTTP(respRec, req)
 				return respRec

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/repository/mocks"
 )
@@ -19,6 +20,7 @@ func TestHealthCheckService_Check(t *testing.T) {
 
 		setupMockRepo func(ctx context.Context) *mocks.HealthCheck
 
+		expectedError       error
 		expectedMessage     string
 		expectedServiceName string
 		expectedInstanceID  string
@@ -35,7 +37,25 @@ func TestHealthCheckService_Check(t *testing.T) {
 				return repoMock
 			},
 
+			expectedError:       nil,
 			expectedMessage:     StatusOK,
+			expectedServiceName: "TestService",
+			expectedInstanceID:  "Instance123",
+		},
+		{
+			name: "Health Check return timeout error",
+
+			inputServiceName: "TestService",
+			inputInstanceID:  "Instance123",
+
+			setupMockRepo: func(ctx context.Context) *mocks.HealthCheck {
+				repoMock := mocks.NewHealthCheck(t)
+				repoMock.On("Ping", ctx).Return(redis.ErrPoolTimeout)
+				return repoMock
+			},
+
+			expectedError:       redis.ErrPoolTimeout,
+			expectedMessage:     RedisPingTimeout,
 			expectedServiceName: "TestService",
 			expectedInstanceID:  "Instance123",
 		},
@@ -51,7 +71,7 @@ func TestHealthCheckService_Check(t *testing.T) {
 
 			status, serviceName, instanceID, err := testSvc.Check(t.Context())
 
-			assert.Nil(t, err)
+			assert.Equal(t, tc.expectedError, err)
 			assert.Equal(t, tc.expectedMessage, status)
 			assert.Equal(t, tc.expectedServiceName, serviceName)
 			assert.Equal(t, tc.expectedInstanceID, instanceID)

@@ -13,6 +13,8 @@ const (
 
 // UrlStorage defines the interface for URL storage operations.
 // It provides methods for retrieving and storing URLs using a Redis backend.
+//
+//go:generate mockery --name UrlStorage --filename shorten_url_repo.go --output ./mocks
 type UrlStorage interface {
 	// GetURL retrieves the original URL associated with the given ID.
 	//
@@ -81,9 +83,8 @@ func (s *urlStorage) GetURL(ctx context.Context, id string) (string, error) {
 // Returns:
 //   - error: An error object if the storage operation fails, otherwise nil
 func (s *urlStorage) StoreURL(ctx context.Context, code, url string, expireIn int) error {
-	expiration := defaultURLExpireTime
-	if expireIn > 0 {
-		expiration = time.Duration(expireIn) * time.Second
+	if expireIn <= 0 {
+		expireIn = int(defaultURLExpireTime)
 	}
-	return s.redisClient.Set(ctx, code, url, expiration).Err()
+	return s.redisClient.Set(ctx, code, url, time.Duration(expireIn)*time.Second).Err()
 }

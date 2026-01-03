@@ -40,6 +40,22 @@ func TestHealthCheckService_Check(t *testing.T) {
 			expectedStatus:   http.StatusOK,
 			expectedResponse: `{"message":"OK","service_name":"TestService","instance_id":"Instance123"}`,
 		},
+		{
+			name: "failed health check",
+
+			setupRequest: func(ctx *gin.Context) {
+				ctx.Request = httptest.NewRequest(http.MethodGet, "/health-check", nil)
+			},
+			setupMockSvc: func(ctx *gin.Context) *mocks.HealthCheck {
+				svcMock := mocks.NewHealthCheck(t)
+				svcMock.On("Check", ctx).Return("Service Unhealthy", "TestService", "Instance123", assert.AnError)
+				return svcMock
+			},
+
+			expectedError:    assert.AnError,
+			expectedStatus:   http.StatusInternalServerError,
+			expectedResponse: `{"message":"Service Unhealthy","service_name":"TestService","instance_id":"Instance123"}`,
+		},
 	}
 
 	for _, tc := range testCases {

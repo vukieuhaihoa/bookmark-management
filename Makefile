@@ -1,4 +1,4 @@
-COVERAGE_EXCLUDE=mocks|vendor|test|docs|main.go|config.go
+COVERAGE_EXCLUDE=mocks|vendor|test|docs|main.go|config.go|client.go
 COVERAGE_THRESHOLD = 80
 
 .PHONY: swag-gen

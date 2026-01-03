@@ -28,6 +28,17 @@ func TestHealthCheckRepo_Check(t *testing.T) {
 
 			expectedError: nil,
 		},
+		{
+			name: "failed ping",
+
+			setupMock: func() *redis.Client {
+				redisClient := redisPkg.InitMockRedis(t)
+				redisClient.Close()
+				return redisClient
+			},
+
+			expectedError: redis.ErrClosed,
+		},
 	}
 
 	for _, tc := range testCases {

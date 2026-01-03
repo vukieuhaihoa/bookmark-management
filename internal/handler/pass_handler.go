@@ -56,7 +56,7 @@ func NewPassword(svc service.Password) Password {
 // @Produce plain
 // @Success 200 {object} string "w7h3Q9FeXskn"
 // @Failure 500 {object} string "Internal Server Error"
-// @Router /generate-password [get]
+// @Router /v1/generate-password [get]
 func (h *passwordHandler) GeneratePassword(c *gin.Context) {
 	pass, err := h.svc.GeneratePassword()
 	if err != nil {

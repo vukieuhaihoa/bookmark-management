@@ -1,13 +1,28 @@
 package handler
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/vukieuhaihoa/bookmark-management/internal/service"
 )
 
+var (
+	inValidRequestPayload = errors.New("invalid request payload")
+	internalServerError   = errors.New("internal server error")
+)
+
+// ShortenURL is the interface for the shorten URL handler.
 type ShortenURL interface {
+	// ShortenURL handles the URL shortening request.
+	// It takes a Gin context as input and processes the request to generate a shortened URL.
+	//
+	// Parameters:
+	//   - c: The Gin context containing the HTTP request and response
+	ShortenURL(c *gin.Context)
 }
 
+// shortenURLHandler is the concrete implementation of the ShortenURL interface.
 type shortenURLHandler struct {
 	shortenURLSvc service.ShortenURL
 }
@@ -28,18 +43,40 @@ type shortenURLResponse struct {
 	Message string `json:"message"`
 }
 
+// ErrorResponse represents a standard error response.
+// swagger:model
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
+// ShortenURL handles the URL shortening request.
+// It takes a Gin context as input and processes the request to generate a shortened URL.
+//
+// Parameters:
+//   - c: The Gin context containing the HTTP request and response
+//
+// @Summary Shorten a URL
+// @Description Shortens a given URL and returns a unique code.
+// @Tags URL
+// @Accept json
+// @Produce json
+// @Param shortenURLRequest body shortenURLRequest true "URL to shorten"
+// @Success 200 {object} shortenURLResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /v1/links/shorten [post]
 func (h *shortenURLHandler) ShortenURL(c *gin.Context) {
 	// Implementation goes here
 	input := &shortenURLRequest{}
 	err := c.ShouldBindJSON(input)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, ErrorResponse{Error: inValidRequestPayload.Error()})
 		return
 	}
 
-	code, err := h.shortenURLSvc.ShortenURL(c, input.URL)
+	code, err := h.shortenURLSvc.ShortenURL(c, input.URL, input.ExpireIn)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(500, ErrorResponse{Error: internalServerError.Error()})
 		return
 	}
 
