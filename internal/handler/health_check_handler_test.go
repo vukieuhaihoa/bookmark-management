@@ -11,7 +11,7 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/service/mocks"
 )
 
-func TestHealthCheckService_Check(t *testing.T) {
+func TestHealthCheck_Check(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {

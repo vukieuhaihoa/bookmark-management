@@ -13,7 +13,7 @@ run: swag-gen
 mock-gen:
 	go generate ./...
 
-.PHONY: test docker-test
+.PHONY: test 
 test:
 	go test ./... -coverprofile=coverage.tmp -covermode=atomic -coverpkg=./... -p 1
 	grep -v -E "$(COVERAGE_EXCLUDE)" coverage.tmp > coverage.out
@@ -25,19 +25,6 @@ test:
     else \
 	   echo "✅ Coverage ($$total%) meets threshold ($(COVERAGE_THRESHOLD)%)"; \
    	fi
-
-COVERAGE_FOLDER=./coverage
-
-docker-test:
-	mkdir -p $(COVERAGE_FOLDER)
-	docker buildx build --build-arg COVERAGE_EXCLUDE="$(COVERAGE_EXCLUDE)" --target test -t bookmark-service-test:dev --output $(COVERAGE_FOLDER) .
-	@total=$$(go tool cover -func=$(COVERAGE_FOLDER)/coverage.out | grep total: | awk '{print $$3}' | sed 's/%//'); \
-	if [ $$(echo "$$total < $(COVERAGE_THRESHOLD)" | bc -l) -eq 1 ]; then \
-	   echo "❌ Coverage ($$total%) is below threshold ($(COVERAGE_THRESHOLD)%)"; \
-	   exit 1; \
-	else \
-	   echo "✅ Coverage ($$total%) meets threshold ($(COVERAGE_THRESHOLD)%)"; \
-	fi
 
 .PHONY: redis-run redis-cli redis-monitor
 redis-run:

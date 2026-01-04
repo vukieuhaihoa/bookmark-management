@@ -1,10 +1,5 @@
 basePath: /
 definitions:
-  handler.ErrorResponse:
-    properties:
-      error:
-        type: string
-    type: object
   handler.healthCheckResponse:
     properties:
       instance_id:
@@ -93,11 +88,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.ErrorResponse'
+            $ref: '#/definitions/handler.shortenURLResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.ErrorResponse'
+            $ref: '#/definitions/handler.shortenURLResponse'
       summary: Shorten a URL
       tags:
       - URL

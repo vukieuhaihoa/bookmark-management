@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vukieuhaihoa/bookmark-management/internal/service"
@@ -43,12 +44,6 @@ type shortenURLResponse struct {
 	Message string `json:"message"`
 }
 
-// ErrorResponse represents a standard error response.
-// swagger:model
-type ErrorResponse struct {
-	Error string `json:"error"`
-}
-
 // ShortenURL handles the URL shortening request.
 // It takes a Gin context as input and processes the request to generate a shortened URL.
 //
@@ -62,25 +57,31 @@ type ErrorResponse struct {
 // @Produce json
 // @Param shortenURLRequest body shortenURLRequest true "URL to shorten"
 // @Success 200 {object} shortenURLResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Failure 400 {object} shortenURLResponse
+// @Failure 500 {object} shortenURLResponse
 // @Router /v1/links/shorten [post]
 func (h *shortenURLHandler) ShortenURL(c *gin.Context) {
 	// Implementation goes here
 	input := &shortenURLRequest{}
 	err := c.ShouldBindJSON(input)
-	if err != nil {
-		c.JSON(400, ErrorResponse{Error: inValidRequestPayload.Error()})
+	if err != nil || input.URL == "" || input.ExpireIn <= 0 {
+		c.JSON(http.StatusBadRequest, shortenURLResponse{
+			Code:    "",
+			Message: inValidRequestPayload.Error(),
+		})
 		return
 	}
 
 	code, err := h.shortenURLSvc.ShortenURL(c, input.URL, input.ExpireIn)
 	if err != nil {
-		c.JSON(500, ErrorResponse{Error: internalServerError.Error()})
+		c.JSON(http.StatusInternalServerError, shortenURLResponse{
+			Code:    "",
+			Message: internalServerError.Error(),
+		})
 		return
 	}
 
-	c.JSON(200, shortenURLResponse{
+	c.JSON(http.StatusOK, shortenURLResponse{
 		Code:    code,
 		Message: "Shorten URL generated successfully!",
 	})
