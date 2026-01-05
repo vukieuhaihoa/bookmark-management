@@ -1,0 +1,101 @@
+basePath: /
+definitions:
+  handler.healthCheckResponse:
+    properties:
+      instance_id:
+        type: string
+      message:
+        type: string
+      service_name:
+        type: string
+    type: object
+  handler.shortenURLRequest:
+    properties:
+      exp:
+        type: integer
+      url:
+        type: string
+    required:
+    - exp
+    - url
+    type: object
+  handler.shortenURLResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: author@gmail.com
+    name: API Support
+    url: http://www.example.com/support
+  description: This is the API documentation for the Bookmark Management service.
+  title: Bookmark Management API
+  version: "1.0"
+paths:
+  /health-check:
+    get:
+      description: Performs a health check and returns the service status.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.healthCheckResponse'
+      summary: Health Check
+      tags:
+      - health
+  /v1/generate-password:
+    get:
+      description: Generates a cryptographically secure random password of fixed length.
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: w7h3Q9FeXskn
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Generate a random password
+      tags:
+      - password
+  /v1/links/shorten:
+    post:
+      consumes:
+      - application/json
+      description: Shortens a given URL and returns a unique code.
+      parameters:
+      - description: URL to shorten
+        in: body
+        name: shortenURLRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handler.shortenURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.shortenURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.shortenURLResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.shortenURLResponse'
+      summary: Shorten a URL
+      tags:
+      - URL
+schemes:
+- http
+swagger: "2.0"

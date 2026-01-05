@@ -23,6 +23,11 @@ type healthCheckHandler struct {
 // HealthCheck defines the interface for health check HTTP handlers.
 // It provides a method for handling health check requests using the Gin framework.
 type HealthCheck interface {
+	// Check is a Gin framework handler that performs a health check.
+	// It processes HTTP requests and returns the health status.
+	//
+	// Parameters:
+	//   - c: The Gin context containing the HTTP request and response
 	Check(ctx *gin.Context)
 }
 
@@ -48,8 +53,23 @@ func NewHealthCheck(svc service.HealthCheck) HealthCheck {
 //
 // Response:h
 //   - 200 OK: Returns the health status as a JSON object
+//
+// @Summary Health Check
+// @Description Performs a health check and returns the service status.
+// @Tags health
+// @Produce json
+// @Success 200 {object} healthCheckResponse
+// @Router /health-check [get]
 func (h *healthCheckHandler) Check(c *gin.Context) {
-	message, serviceName, instanceID := h.svc.Check()
+	message, serviceName, instanceID, err := h.svc.Check(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, healthCheckResponse{
+			Message:     message,
+			ServiceName: serviceName,
+			InstanceID:  instanceID,
+		})
+		return
+	}
 	c.JSON(http.StatusOK, healthCheckResponse{
 		Message:     message,
 		ServiceName: serviceName,

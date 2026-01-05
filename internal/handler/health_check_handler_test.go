@@ -11,30 +11,50 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/service/mocks"
 )
 
-func TestHealthCheckService_Check(t *testing.T) {
+func TestHealthCheck_Check(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
 		name string
 
 		setupRequest func(ctx *gin.Context)
-		setupMockSvc func() *mocks.HealthCheck
+		setupMockSvc func(ctx *gin.Context) *mocks.HealthCheck
 
+		expectedError    error
 		expectedStatus   int
 		expectedResponse string
 	}{
 		{
 			name: "successful health check",
+
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(http.MethodGet, "/health-check", nil)
 			},
-			setupMockSvc: func() *mocks.HealthCheck {
+			setupMockSvc: func(ctx *gin.Context) *mocks.HealthCheck {
 				svcMock := mocks.NewHealthCheck(t)
-				svcMock.On("Check").Return(service.StatusOK, "TestService", "Instance123")
+				svcMock.On("Check", ctx).Return(service.StatusOK, "TestService", "Instance123", nil)
 				return svcMock
 			},
+
+			expectedError:    nil,
 			expectedStatus:   http.StatusOK,
 			expectedResponse: `{"message":"OK","service_name":"TestService","instance_id":"Instance123"}`,
+		},
+		{
+			name: "failed health check",
+
+			setupRequest: func(ctx *gin.Context) {
+				ctx.Request = httptest.NewRequest(http.MethodGet, "/health-check", nil)
+			},
+			setupMockSvc: func(ctx *gin.Context) *mocks.HealthCheck {
+				svcMock := mocks.NewHealthCheck(t)
+				svcMock.On("Check", ctx).Return("Service Unhealthy", "TestService", "Instance123", assert.AnError)
+				return svcMock
+			},
+
+			expectedError:    assert.AnError,
+			expectedStatus:   http.StatusInternalServerError,
+			expectedResponse: `{"message":"Service Unhealthy","service_name":"TestService","instance_id":"Instance123"}`,
 		},
 	}
 
@@ -46,7 +66,7 @@ func TestHealthCheckService_Check(t *testing.T) {
 			gc, _ := gin.CreateTestContext(rec)
 
 			tc.setupRequest(gc)
-			mockSvc := tc.setupMockSvc()
+			mockSvc := tc.setupMockSvc(gc)
 			testHandler := &healthCheckHandler{svc: mockSvc}
 
 			testHandler.Check(gc)

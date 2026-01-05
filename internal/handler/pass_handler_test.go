@@ -47,7 +47,7 @@ func TestPasswordHandler_GeneratePassword(t *testing.T) {
 				return svcMock
 			},
 			expectedStatus:   http.StatusInternalServerError,
-			expectedResponse: "something went wrong",
+			expectedResponse: ErrPasswordGenerationFailed.Error(),
 		},
 	}
 

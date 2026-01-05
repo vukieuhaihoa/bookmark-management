@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	mockRandomCodeGen "github.com/vukieuhaihoa/bookmark-management/pkg/stringutils/mocks"
 )
 
 var urlSafeRegex = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
@@ -15,11 +16,20 @@ func TestPasswordService_GeneratePassword(t *testing.T) {
 	testCases := []struct {
 		name string
 
+		setupMockRandomCodeGen func() *mockRandomCodeGen.CodeGenerator
+
 		expectedLength int
 		expectedError  error
 	}{
 		{
-			name:           "Generate password successfully",
+			name: "Generate password successfully",
+
+			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
+				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
+				codeGenMock.On("GenerateCode", 12).Return("AbcD1234EfGh", nil)
+				return codeGenMock
+			},
+
 			expectedLength: 12,
 			expectedError:  nil,
 		},
@@ -29,7 +39,8 @@ func TestPasswordService_GeneratePassword(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			testSvc := NewPassword()
+			mockRandomCodeGen := tc.setupMockRandomCodeGen()
+			testSvc := NewPassword(mockRandomCodeGen)
 			pass, err := testSvc.GeneratePassword()
 
 			assert.Equal(t, tc.expectedLength, len(pass))
