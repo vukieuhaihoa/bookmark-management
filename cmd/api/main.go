@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
 
+	"github.com/vukieuhaihoa/bookmark-management/pkg/logger"
 	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
 )
 
@@ -17,6 +18,8 @@ import (
 // @contact.url http://www.example.com/support
 // @contact.email author@gmail.com
 func main() {
+	logger.SetLogLevel()
+
 	cfg, err := api.NewConfig()
 	if err != nil {
 		panic(err)

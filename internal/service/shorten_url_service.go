@@ -15,6 +15,7 @@ const (
 )
 
 var (
+	ErrCodeNotFound       = errors.New("shortened URL not found")
 	ErrMaxRetriesExceeded = errors.New("maximum retry attempts exceeded for generating unique URL code")
 )
 
@@ -33,6 +34,17 @@ type ShortenURL interface {
 	//   - string: The generated shortened URL code
 	//   - error: An error object if the shortening operation fails, otherwise nil
 	ShortenURL(ctx context.Context, originalURL string, expireIn int) (string, error)
+
+	// GetURL retrieves the original URL associated with the given shortened URL code.
+	//
+	// Parameters:
+	//   - ctx: The context for managing request deadlines and cancellations
+	//   - urlCode: The shortened URL code
+	//
+	// Returns:
+	//   - string: The original URL associated with the shortened code
+	//   - error: An error object if the retrieval operation fails, otherwise nil
+	GetURL(ctx context.Context, urlCode string) (string, error)
 }
 
 // shortenURL implements the ShortenURL interface and provides methods for shortening URLs.
@@ -102,4 +114,22 @@ func (s *shortenURL) ShortenURL(ctx context.Context, originalURL string, expireI
 	}
 
 	return urlCode, nil
+}
+
+// GetURL retrieves the original URL associated with the given shortened URL code.
+//
+// Parameters:
+//   - ctx: The context for managing request deadlines and cancellations
+//   - urlCode: The shortened URL code
+//
+// Returns:
+//   - string: The original URL associated with the shortened code
+//   - error: An error object if the retrieval operation fails, otherwise nil
+func (s *shortenURL) GetURL(ctx context.Context, urlCode string) (string, error) {
+	url, err := s.repo.GetURL(ctx, urlCode)
+	if errors.Is(err, redis.Nil) {
+		return "", ErrCodeNotFound
+	}
+
+	return url, err
 }

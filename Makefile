@@ -14,7 +14,7 @@ mock-gen:
 	go generate ./...
 
 .PHONY: test 
-test:
+test: clean
 	go test ./... -coverprofile=coverage.tmp -covermode=atomic -coverpkg=./... -p 1
 	grep -v -E "$(COVERAGE_EXCLUDE)" coverage.tmp > coverage.out
 	go tool cover -html=coverage.out -o coverage.html
@@ -37,6 +37,12 @@ redis-monitor:
 	docker exec -it redis redis-cli monitor
 
 .PHONY: build
-
 build:
-	docker build -t bookmark_service_123:dev .
+	docker build -t bookmark_service:dev .
+# 	docker tag bookmark_service:dev bookmark_service:latest
+
+.PHONY: clean
+clean:
+	go clean -testcache
+	rm -f coverage.out coverage.tmp coverage.html
+# 	docker rm -f redis || true

@@ -13,6 +13,34 @@ type ShortenURL struct {
 	mock.Mock
 }
 
+// GetURL provides a mock function with given fields: ctx, urlCode
+func (_m *ShortenURL) GetURL(ctx context.Context, urlCode string) (string, error) {
+	ret := _m.Called(ctx, urlCode)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetURL")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (string, error)); ok {
+		return rf(ctx, urlCode)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+		r0 = rf(ctx, urlCode)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, urlCode)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ShortenURL provides a mock function with given fields: ctx, originalURL, expireIn
 func (_m *ShortenURL) ShortenURL(ctx context.Context, originalURL string, expireIn int) (string, error) {
 	ret := _m.Called(ctx, originalURL, expireIn)

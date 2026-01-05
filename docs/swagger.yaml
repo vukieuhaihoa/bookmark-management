@@ -12,6 +12,7 @@ definitions:
   handler.shortenURLRequest:
     properties:
       exp:
+        maximum: 604800
         type: integer
       url:
         type: string
@@ -66,6 +67,35 @@ paths:
       summary: Generate a random password
       tags:
       - password
+  /v1/links/redirect/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the original URL from a given shortened code.
+      parameters:
+      - description: Shortened code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.shortenURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.shortenURLResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.shortenURLResponse'
+      summary: Get original URL
+      tags:
+      - URL
   /v1/links/shorten:
     post:
       consumes:
