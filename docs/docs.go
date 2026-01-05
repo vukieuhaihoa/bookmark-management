@@ -19,6 +19,26 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/health-check": {
+            "get": {
+                "description": "Performs a health check and returns the service status.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health Check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.healthCheckResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/generate-password": {
             "get": {
                 "description": "Generates a cryptographically secure random password of fixed length.",
@@ -40,26 +60,6 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/health-check": {
-            "get": {
-                "description": "Performs a health check and returns the service status.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "health"
-                ],
-                "summary": "Health Check",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.healthCheckResponse"
                         }
                     }
                 }

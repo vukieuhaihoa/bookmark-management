@@ -36,6 +36,19 @@ info:
   title: Bookmark Management API
   version: "1.0"
 paths:
+  /health-check:
+    get:
+      description: Performs a health check and returns the service status.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.healthCheckResponse'
+      summary: Health Check
+      tags:
+      - health
   /v1/generate-password:
     get:
       description: Generates a cryptographically secure random password of fixed length.
@@ -53,19 +66,6 @@ paths:
       summary: Generate a random password
       tags:
       - password
-  /v1/health-check:
-    get:
-      description: Performs a health check and returns the service status.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.healthCheckResponse'
-      summary: Health Check
-      tags:
-      - health
   /v1/links/shorten:
     post:
       consumes:

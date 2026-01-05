@@ -50,10 +50,6 @@ func TestShortenURLRepo_StoreURL(t *testing.T) {
 			},
 
 			expectedError: redis.ErrClosed,
-
-			verifyFunc: func(ctx context.Context, redisClient *redis.Client) {
-				// No verification needed as the operation is expected to fail
-			},
 		},
 	}
 
@@ -118,10 +114,6 @@ func TestShortenURLRepo_GetURL(t *testing.T) {
 			},
 
 			expectedError: redis.ErrClosed,
-
-			verifyFunc: func(ctx context.Context, redisClient *redis.Client) {
-				// No verification needed as the operation is expected to fail
-			},
 		},
 	}
 

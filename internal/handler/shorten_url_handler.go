@@ -28,6 +28,13 @@ type shortenURLHandler struct {
 	shortenURLSvc service.ShortenURL
 }
 
+// NewShortenURL creates a new instance of the ShortenURL handler.
+//
+// Parameters:
+//   - shortenURLSvc: The shorten URL service used for URL shortening operations
+//
+// Returns:
+//   - ShortenURL: A new shorten URL handler instance
 func NewShortenURL(shortenURLSvc service.ShortenURL) ShortenURL {
 	return &shortenURLHandler{
 		shortenURLSvc: shortenURLSvc,
@@ -40,7 +47,7 @@ type shortenURLRequest struct {
 }
 
 type shortenURLResponse struct {
-	Code    string `json:"code"`
+	Code    string `json:"code,omitempty"`
 	Message string `json:"message"`
 }
 
@@ -66,7 +73,6 @@ func (h *shortenURLHandler) ShortenURL(c *gin.Context) {
 	err := c.ShouldBindJSON(input)
 	if err != nil || input.URL == "" || input.ExpireIn <= 0 {
 		c.JSON(http.StatusBadRequest, shortenURLResponse{
-			Code:    "",
 			Message: inValidRequestPayload.Error(),
 		})
 		return
@@ -75,7 +81,6 @@ func (h *shortenURLHandler) ShortenURL(c *gin.Context) {
 	code, err := h.shortenURLSvc.ShortenURL(c, input.URL, input.ExpireIn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, shortenURLResponse{
-			Code:    "",
 			Message: internalServerError.Error(),
 		})
 		return

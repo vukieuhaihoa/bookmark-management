@@ -4,10 +4,16 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vukieuhaihoa/bookmark-management/internal/service"
+)
+
+var (
+	// ErrPasswordGenerationFailed indicates that password generation has failed.
+	ErrPasswordGenerationFailed = errors.New("password generation failed")
 )
 
 type passwordHandler struct {
@@ -60,7 +66,7 @@ func NewPassword(svc service.Password) Password {
 func (h *passwordHandler) GeneratePassword(c *gin.Context) {
 	pass, err := h.svc.GeneratePassword()
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		c.String(http.StatusInternalServerError, ErrPasswordGenerationFailed.Error())
 		return
 	}
 	c.String(http.StatusOK, pass)

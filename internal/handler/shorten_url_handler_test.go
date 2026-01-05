@@ -54,7 +54,7 @@ func TestShortenURL_ShortenURL(t *testing.T) {
 			},
 			expectedError:    nil,
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: `{"code":"","message":"invalid request payload"}`,
+			expectedResponse: `{"message":"invalid request payload"}`,
 		},
 		{
 			name: "service error during URL shortening",
@@ -71,7 +71,7 @@ func TestShortenURL_ShortenURL(t *testing.T) {
 			},
 
 			expectedStatus:   http.StatusInternalServerError,
-			expectedResponse: `{"code":"","message":"internal server error"}`,
+			expectedResponse: `{"message":"internal server error"}`,
 		},
 	}
 	for _, tc := range testCases {

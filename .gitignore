@@ -9,3 +9,8 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Coverage files
+coverage.out
+coverage.tmp
+coverage.html

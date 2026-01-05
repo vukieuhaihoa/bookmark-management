@@ -103,19 +103,21 @@ func (a *api) registerRoutes() {
 	shortenURLRepo := repository.NewUrlStorage(a.redisClient)
 	shortenURLSvc := service.NewShortenURL(shortenURLRepo, a.randomCodeGen)
 	shortenURLHandler := handler.NewShortenURL(shortenURLSvc)
+
+	// API version group
 	v1 := a.app.Group("/v1")
 	{
-		// Register health check endpoint
-		v1.GET("/health-check", healthCheckHandler.Check)
-
 		// Register password generation endpoint
 		v1.GET("/generate-password", passHandler.GeneratePassword)
 
 		// Register URL shortening endpoint
 		v1.POST("/links/shorten", shortenURLHandler.ShortenURL)
-
-		// Register Swagger documentation endpoint
-		v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
+
+	// Register health check endpoint
+	a.app.GET("/health-check", healthCheckHandler.Check)
+
+	// Register Swagger documentation endpoint
+	a.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 }

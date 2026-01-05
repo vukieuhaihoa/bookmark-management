@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
-	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
 )
 
 func TestPasswordEndpoint(t *testing.T) {
@@ -39,7 +38,7 @@ func TestPasswordEndpoint(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			apiEngine := api.New(&api.Config{}, redisPkg.InitMockRedis(t))
+			apiEngine := api.New(&api.Config{}, nil)
 
 			respRec := tc.setupTestHTTP(apiEngine)
 
