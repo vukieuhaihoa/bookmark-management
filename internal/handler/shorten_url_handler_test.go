@@ -158,6 +158,21 @@ func TestShortenURL_GetURL(t *testing.T) {
 			expectedCode: http.StatusInternalServerError,
 			expectedURL:  "",
 		},
+		{
+			name: "missing code parameter",
+
+			setupRequest: func(ctx *gin.Context) {
+				ctx.Request = httptest.NewRequest(http.MethodGet, "/v1/links/redirect", nil)
+				// No code parameter set
+			},
+
+			setupMockSvc: func(ctx *gin.Context) *mocks.ShortenURL {
+				return mocks.NewShortenURL(t)
+			},
+
+			expectedCode: http.StatusBadRequest,
+			expectedURL:  "",
+		},
 	}
 
 	for _, tc := range testCases {

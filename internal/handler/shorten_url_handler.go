@@ -144,19 +144,5 @@ func (h *shortenURLHandler) GetURL(c *gin.Context) {
 		return
 	}
 
-	// Handle errors with if else statement
-	// if err != nil {
-	// 	if errors.Is(err, service.ErrCodeNotFound) {
-	// 		c.JSON(http.StatusBadRequest, shortenURLResponse{
-	// 			Message: ErrCodeNotFound.Error(),
-	// 		})
-	// 		return
-	// 	}
-	// 	c.JSON(http.StatusInternalServerError, shortenURLResponse{
-	// 		Message: InternalServerError.Error(),
-	// 	})
-	// 	return
-	// }
-
 	c.Redirect(http.StatusFound, url)
 }
