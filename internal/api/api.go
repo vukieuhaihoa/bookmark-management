@@ -112,6 +112,9 @@ func (a *api) registerRoutes() {
 
 		// Register URL shortening endpoint
 		v1.POST("/links/shorten", shortenURLHandler.ShortenURL)
+
+		// Redirect endpoint for shortened URLs by given code
+		v1.GET("/links/redirect/:code", shortenURLHandler.GetURL)
 	}
 
 	// Register health check endpoint

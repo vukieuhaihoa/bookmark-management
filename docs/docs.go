@@ -65,6 +65,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/links/redirect/{code}": {
+            "get": {
+                "description": "Retrieves the original URL from a given shortened code.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "URL"
+                ],
+                "summary": "Get original URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortened code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.shortenURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.shortenURLResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.shortenURLResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/links/shorten": {
             "post": {
                 "description": "Shortens a given URL and returns a unique code.",
@@ -135,7 +179,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "exp": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 604800
                 },
                 "url": {
                     "type": "string"
