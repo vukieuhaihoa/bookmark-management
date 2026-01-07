@@ -10,7 +10,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	_ "github.com/vukieuhaihoa/bookmark-management/docs"
+	"github.com/vukieuhaihoa/bookmark-management/docs"
 	"github.com/vukieuhaihoa/bookmark-management/internal/handler"
 	"github.com/vukieuhaihoa/bookmark-management/internal/repository"
 	"github.com/vukieuhaihoa/bookmark-management/internal/service"
@@ -103,6 +103,9 @@ func (a *api) registerRoutes() {
 	shortenURLRepo := repository.NewUrlStorage(a.redisClient)
 	shortenURLSvc := service.NewShortenURL(shortenURLRepo, a.randomCodeGen)
 	shortenURLHandler := handler.NewShortenURL(shortenURLSvc)
+
+	// Swagger info setup
+	docs.SwaggerInfo.Host = a.cfg.AppHostName
 
 	// API version group
 	v1 := a.app.Group("/v1")

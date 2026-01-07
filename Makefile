@@ -36,13 +36,23 @@ redis-cli:
 redis-monitor:
 	docker exec -it redis redis-cli monitor
 
-.PHONY: build
+.PHONY: build, up, down, push
 build:
-	docker build -t bookmark_service:dev .
+	docker build -t haihoanguci/bookmark_service:dev .
 # 	docker tag bookmark_service:dev bookmark_service:latest
+
+push: build
+	docker push haihoanguci/bookmark_service:dev
+
+up:
+	docker-compose up -d
+
+down:
+	docker-compose down
 
 .PHONY: clean
 clean:
 	go clean -testcache
 	rm -f coverage.out coverage.tmp coverage.html
 # 	docker rm -f redis || true
+
