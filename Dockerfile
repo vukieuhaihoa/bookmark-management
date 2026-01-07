@@ -9,8 +9,9 @@ COPY . .
 RUN apk add build-base
 
 RUN go mod download && \
-    go build -o bookmark_service cmd/api/main.go
-
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -tags musl -ldflags="-w -s" \
+    -o bookmark_service cmd/api/main.go
 
 FROM alpine AS run
 
