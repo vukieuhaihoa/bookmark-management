@@ -11,6 +11,7 @@
 # vendor/
 
 # Coverage files
+coverage/
 coverage.out
 coverage.tmp
 coverage.html
