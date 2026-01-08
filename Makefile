@@ -1,3 +1,18 @@
+IMG_NAME=haihoanguci/bookmark_service
+GIT_TAG := $(shell git describe --tags --exact-match --abbrev=0 2>/dev/null)
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+IMG_TAG := temporary
+
+ifeq ($(BRANCH), main)
+	IMG_TAG := dev
+endif
+
+ifneq ($(GIT_TAG),)
+	IMG_TAG := $(GIT_TAG)
+endif
+
+export IMG_TAG
+
 COVERAGE_EXCLUDE=mocks|vendor|test|docs|main.go|config.go|client.go
 COVERAGE_THRESHOLD = 80
 
@@ -36,23 +51,40 @@ redis-cli:
 redis-monitor:
 	docker exec -it redis redis-cli monitor
 
-.PHONY: build, up, down, push
-build:
-	docker build -t haihoanguci/bookmark_service:dev .
-# 	docker tag bookmark_service:dev bookmark_service:latest
+.PHONY: docker-build, docker-up, docker-down, docker-release, docker-test
+docker-build:
+	docker build -t $(IMG_NAME):$(IMG_TAG) .
 
-push: build
-	docker push haihoanguci/bookmark_service:dev
+docker-release: docker-build
+	docker push $(IMG_NAME):$(IMG_TAG)
 
-up:
+docker-up:
 	docker-compose up -d
 
-down:
+docker-down:
 	docker-compose down
+
+DOCKER_HUB_USERNAME ?=
+DOCKER_HUB_ACCESS_TOKEN ?=
+
+docker-login:
+	echo "$(DOCKER_HUB_ACCESS_TOKEN)" | docker login -u "$(DOCKER_HUB_USERNAME)" --password-stdin
+
+COVERAGE_FOLDER=./coverage
+docker-test:
+	mkdir -p $(COVERAGE_FOLDER)
+	docker buildx build --build-arg COVERAGE_EXCLUDE="$(COVERAGE_EXCLUDE)" --target test -t bookmark_service:dev --output $(COVERAGE_FOLDER) .
+	@total=$$(go tool cover -func=$(COVERAGE_FOLDER)/coverage.out | grep total: | awk '{print $$3}' | sed 's/%//'); \
+    if [ $$(echo "$$total < $(COVERAGE_THRESHOLD)" | bc -l) -eq 1 ]; then \
+	   echo "❌ Coverage ($$total%) is below threshold ($(COVERAGE_THRESHOLD)%)"; \
+	   exit 1; \
+    else \
+	   echo "✅ Coverage ($$total%) meets threshold ($(COVERAGE_THRESHOLD)%)"; \
+   	fi	
 
 .PHONY: clean
 clean:
 	go clean -testcache
-	rm -f coverage.out coverage.tmp coverage.html
+	rm -rf ./coverage
 # 	docker rm -f redis || true
 
