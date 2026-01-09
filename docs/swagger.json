@@ -11,7 +11,7 @@
             "url": "http://www.example.com/support",
             "email": "author@gmail.com"
         },
-        "version": "1.0"
+        "version": "1.2"
     },
     "host": "localhost:8080",
     "basePath": "/",
