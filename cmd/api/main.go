@@ -8,7 +8,7 @@ import (
 )
 
 // @title Bookmark Management API
-// @version 1.0
+// @version 1.2
 // @description This is the API documentation for the Bookmark Management service.
 // @host localhost:8080
 // @BasePath /
