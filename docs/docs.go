@@ -154,9 +154,94 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/user/register": {
+            "post": {
+                "description": "Create a new user with the provided information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create a new user",
+                "parameters": [
+                    {
+                        "description": "User to create",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.createUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/handler.createUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "handler.createUserRequest": {
+            "type": "object",
+            "required": [
+                "display_name",
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "display_name": {
+                    "type": "string",
+                    "example": "Test User"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "testuser001@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "my_SECURE_password123@"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "testuser001"
+                }
+            }
+        },
+        "handler.createUserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.User"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.healthCheckResponse": {
             "type": "object",
             "properties": {
@@ -193,6 +278,38 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.Message": {
+            "type": "object",
+            "properties": {
+                "details": {},
                 "message": {
                     "type": "string"
                 }

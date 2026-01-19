@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
 	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/sqldb"
 )
 
 func TestShortenURLEndpoint(t *testing.T) {
@@ -60,7 +61,7 @@ func TestShortenURLEndpoint(t *testing.T) {
 			apiEngine := api.New(&api.Config{
 				ServiceName: "bookmark-service",
 				InstanceID:  "test_instance_id_1",
-			}, redisPkg.InitMockRedis(t))
+			}, redisPkg.InitMockRedis(t), sqldb.InitMockDB(t))
 
 			respRec := tc.setupTestHTTP(apiEngine)
 
@@ -137,7 +138,7 @@ func TestGetURLEndpoint(t *testing.T) {
 			apiEngine := api.New(&api.Config{
 				ServiceName: "bookmark-service",
 				InstanceID:  "test_instance_id_1",
-			}, mockRedis)
+			}, mockRedis, nil)
 
 			respRec := tc.setupTestHTTP(apiEngine)
 

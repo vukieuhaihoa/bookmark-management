@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
+	"github.com/vukieuhaihoa/bookmark-management/internal/model"
 
 	"github.com/vukieuhaihoa/bookmark-management/pkg/logger"
 	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/sqldb"
 )
 
 // @title Bookmark Management API
@@ -30,6 +32,13 @@ func main() {
 		panic(err)
 	}
 
-	app := api.New(cfg, redisClient)
+	dbClient, err := sqldb.NewClient("")
+	if err != nil {
+		panic(err)
+	}
+
+	dbClient.AutoMigrate(&model.User{})
+
+	app := api.New(cfg, redisClient, dbClient)
 	app.Start()
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 
 	"github.com/redis/go-redis/v9"
@@ -34,6 +35,7 @@ func TestHealthCheckService_Check(t *testing.T) {
 			setupMockRepo: func(ctx context.Context) *mocks.HealthCheck {
 				repoMock := mocks.NewHealthCheck(t)
 				repoMock.On("Ping", ctx).Return(nil)
+				repoMock.On("DBPing", ctx).Return(nil)
 				return repoMock
 			},
 
@@ -56,6 +58,24 @@ func TestHealthCheckService_Check(t *testing.T) {
 
 			expectedError:       redis.ErrPoolTimeout,
 			expectedMessage:     RedisPingTimeout,
+			expectedServiceName: "TestService",
+			expectedInstanceID:  "Instance123",
+		},
+		{
+			name: "Health Check return database error",
+
+			inputServiceName: "TestService",
+			inputInstanceID:  "Instance123",
+
+			setupMockRepo: func(ctx context.Context) *mocks.HealthCheck {
+				repoMock := mocks.NewHealthCheck(t)
+				repoMock.On("Ping", ctx).Return(nil)
+				repoMock.On("DBPing", ctx).Return(sql.ErrConnDone)
+				return repoMock
+			},
+
+			expectedError:       sql.ErrConnDone,
+			expectedMessage:     DBPingConfused,
 			expectedServiceName: "TestService",
 			expectedInstanceID:  "Instance123",
 		},

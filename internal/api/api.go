@@ -6,15 +6,19 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"gorm.io/gorm"
 
 	"github.com/vukieuhaihoa/bookmark-management/docs"
 	"github.com/vukieuhaihoa/bookmark-management/internal/handler"
 	"github.com/vukieuhaihoa/bookmark-management/internal/repository"
 	"github.com/vukieuhaihoa/bookmark-management/internal/service"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/stringutils"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/validators"
 )
 
 // Engine defines the contract for the HTTP server engine.
@@ -46,6 +50,10 @@ type api struct {
 
 	// randomCodeGen is the code generator used for generating random codes
 	randomCodeGen stringutils.CodeGenerator
+
+	passwordHashing stringutils.PasswordHashing
+
+	db *gorm.DB
 }
 
 // New creates a new instance of the API server engine.
@@ -57,15 +65,19 @@ type api struct {
 //
 // Returns:
 //   - Engine: The initialized API server engine instance
-func New(cfg *Config, redisClient *redis.Client) Engine {
+func New(cfg *Config, redisClient *redis.Client, db *gorm.DB) Engine {
 	a := &api{
-		app:           gin.New(),
-		cfg:           cfg,
-		redisClient:   redisClient,
-		randomCodeGen: stringutils.NewCodeGenerator(),
+		app:             gin.New(),
+		cfg:             cfg,
+		redisClient:     redisClient,
+		randomCodeGen:   stringutils.NewCodeGenerator(),
+		passwordHashing: stringutils.NewPasswordHashing(),
+		db:              db,
 	}
 
+	a.registerValidations()
 	a.registerRoutes()
+
 	return a
 }
 
@@ -92,7 +104,7 @@ func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // This method initializes services and handlers, then registers them with the Gin engine.
 // Currently registers the password generation endpoint.
 func (a *api) registerRoutes() {
-	healthCheckRepo := repository.NewHealthCheck(a.redisClient)
+	healthCheckRepo := repository.NewHealthCheck(a.redisClient, a.db)
 
 	passSvc := service.NewPassword(a.randomCodeGen)
 	passHandler := handler.NewPassword(passSvc)
@@ -103,6 +115,10 @@ func (a *api) registerRoutes() {
 	shortenURLRepo := repository.NewUrlStorage(a.redisClient)
 	shortenURLSvc := service.NewShortenURL(shortenURLRepo, a.randomCodeGen)
 	shortenURLHandler := handler.NewShortenURL(shortenURLSvc)
+
+	userRepo := repository.NewUser(a.db)
+	userSvc := service.NewUser(userRepo, a.passwordHashing)
+	userHandler := handler.NewUser(userSvc)
 
 	// Swagger info setup
 	docs.SwaggerInfo.Host = a.cfg.AppHostName
@@ -118,6 +134,8 @@ func (a *api) registerRoutes() {
 
 		// Redirect endpoint for shortened URLs by given code
 		v1.GET("/links/redirect/:code", shortenURLHandler.GetURL)
+
+		v1.POST("/user/register", userHandler.CreateUser)
 	}
 
 	// Register health check endpoint
@@ -126,4 +144,11 @@ func (a *api) registerRoutes() {
 	// Register Swagger documentation endpoint
 	a.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+}
+
+func (a *api) registerValidations() {
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		// Register custom validation functions here
+		v.RegisterValidation("password_strength", validators.PasswordStrength)
+	}
 }

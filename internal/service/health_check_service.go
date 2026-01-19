@@ -9,6 +9,7 @@ import (
 const (
 	StatusOK         = "OK"
 	RedisPingTimeout = "redis: client is closed"
+	DBPingConfused   = "database: database is closed"
 )
 
 // healthCheckService implements the HealthCheck interface and provides methods for performing health checks.
@@ -67,6 +68,10 @@ func NewHealthCheck(serviceName, instanceID string, healthCheckRepo repository.H
 func (s *healthCheckService) Check(ctx context.Context) (string, string, string, error) {
 	if err := s.healthCheckRepo.Ping(ctx); err != nil {
 		return RedisPingTimeout, s.serviceName, s.instanceID, err
+	}
+
+	if err := s.healthCheckRepo.DBPing(ctx); err != nil {
+		return DBPingConfused, s.serviceName, s.instanceID, err
 	}
 
 	return StatusOK, s.serviceName, s.instanceID, nil
