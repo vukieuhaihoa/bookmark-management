@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -15,6 +14,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/vukieuhaihoa/bookmark-management/internal/model"
 	svcMocks "github.com/vukieuhaihoa/bookmark-management/internal/service/mocks"
+	"github.com/vukieuhaihoa/bookmark-management/internal/test/fixture"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/validators"
 )
 
@@ -64,8 +64,8 @@ func TestUser_CreateUser(t *testing.T) {
 						DisplayName: inputRequest.DisplayName,
 						Email:       inputRequest.Email,
 						ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
-						CreatedAt:   time.Now(),
-						UpdatedAt:   time.Now(),
+						CreatedAt:   fixture.TestTime,
+						UpdatedAt:   fixture.TestTime,
 					}, nil)
 				return mockUserSvc
 			},
@@ -88,8 +88,8 @@ func TestUser_CreateUser(t *testing.T) {
 				assert.Equal(t, inputRequest.Email, response.Data.Email)
 
 				// Verify timestamps are set
-				assert.False(t, response.Data.CreatedAt.IsZero(), "CreatedAt should be set")
-				assert.False(t, response.Data.UpdatedAt.IsZero(), "UpdatedAt should be set")
+				assert.Equal(t, fixture.TestTime, response.Data.CreatedAt, "CreatedAt should be set")
+				assert.Equal(t, fixture.TestTime, response.Data.UpdatedAt, "UpdatedAt should be set")
 
 				// Password should not be in the response (due to json:"-" tag)
 				assert.Empty(t, response.Data.Password, "Password should not be in response")

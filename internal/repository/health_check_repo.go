@@ -11,14 +11,14 @@ import (
 //
 //go:generate mockery --name HealthCheck --filename health_check_repo.go --output ./mocks
 type HealthCheck interface {
-	// Ping checks the connectivity to the Redis server.
+	// RedisPing checks the connectivity to the Redis server.
 	//
 	// Parameters:
 	//   - ctx: The context for managing request deadlines and cancellations
 	//
 	// Returns:
 	//   - error: An error object if the ping operation fails, otherwise nil
-	Ping(ctx context.Context) error
+	RedisPing(ctx context.Context) error
 
 	// DBPing checks the connectivity to the database.
 	//
@@ -50,14 +50,14 @@ func NewHealthCheck(redisClient *redis.Client, db *gorm.DB) HealthCheck {
 	}
 }
 
-// Ping checks the connectivity to the Redis server.
+// RedisPing checks the connectivity to the Redis server.
 //
 // Parameters:
 //   - ctx: The context for managing request deadlines and cancellations
 //
 // Returns:
 //   - error: An error object if the ping operation fails, otherwise nil
-func (h *healthCheckStorage) Ping(ctx context.Context) error {
+func (h *healthCheckStorage) RedisPing(ctx context.Context) error {
 	return h.redisClient.Ping(ctx).Err()
 }
 
@@ -69,5 +69,10 @@ func (h *healthCheckStorage) Ping(ctx context.Context) error {
 // Returns:
 //   - error: An error object if the ping operation fails, otherwise nil
 func (h *healthCheckStorage) DBPing(ctx context.Context) error {
-	return h.db.WithContext(ctx).Exec("SELECT 1").Error
+	sqlDB, err := h.db.DB()
+	if err != nil {
+		return err
+	}
+
+	return sqlDB.PingContext(ctx)
 }

@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestHealthCheckRepo_Ping(t *testing.T) {
+func TestHealthCheckRepo_RedisPing(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -53,7 +53,7 @@ func TestHealthCheckRepo_Ping(t *testing.T) {
 
 			healthCheckRepo := NewHealthCheck(redisMockClient, nil)
 
-			err := healthCheckRepo.Ping(ctx)
+			err := healthCheckRepo.RedisPing(ctx)
 			assert.Equal(t, tc.expectedError, err)
 		})
 	}

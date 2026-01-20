@@ -1,9 +1,13 @@
 package fixture
 
 import (
+	"time"
+
 	"github.com/vukieuhaihoa/bookmark-management/internal/model"
 	"gorm.io/gorm"
 )
+
+var TestTime = time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC)
 
 type UserCommonTestDB struct {
 	db *gorm.DB
@@ -46,6 +50,8 @@ func (u *UserCommonTestDB) GenerateData() error {
 			Username:    "Bob",
 			Password:    "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e",
 			Email:       "bob@example.com",
+			CreatedAt:   TestTime,
+			UpdatedAt:   TestTime,
 		},
 		{
 			ID:          "987e6543-e21b-12d3-a456-eb6b9e546002",
@@ -53,6 +59,8 @@ func (u *UserCommonTestDB) GenerateData() error {
 			Username:    "Charlie",
 			Password:    "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e",
 			Email:       "charlie@example.com",
+			CreatedAt:   TestTime,
+			UpdatedAt:   TestTime,
 		},
 	}
 

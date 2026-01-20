@@ -66,7 +66,7 @@ func NewHealthCheck(serviceName, instanceID string, healthCheckRepo repository.H
 //   - string: The unique instance ID of the service
 //   - error: An error if the health check fails, nil otherwise
 func (s *healthCheckService) Check(ctx context.Context) (string, string, string, error) {
-	if err := s.healthCheckRepo.Ping(ctx); err != nil {
+	if err := s.healthCheckRepo.RedisPing(ctx); err != nil {
 		return RedisPingTimeout, s.serviceName, s.instanceID, err
 	}
 

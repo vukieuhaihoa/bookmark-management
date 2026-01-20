@@ -31,12 +31,12 @@ func (_m *HealthCheck) DBPing(ctx context.Context) error {
 	return r0
 }
 
-// Ping provides a mock function with given fields: ctx
-func (_m *HealthCheck) Ping(ctx context.Context) error {
+// RedisPing provides a mock function with given fields: ctx
+func (_m *HealthCheck) RedisPing(ctx context.Context) error {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Ping")
+		panic("no return value specified for RedisPing")
 	}
 
 	var r0 error

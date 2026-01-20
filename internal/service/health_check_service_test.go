@@ -34,7 +34,7 @@ func TestHealthCheckService_Check(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mocks.HealthCheck {
 				repoMock := mocks.NewHealthCheck(t)
-				repoMock.On("Ping", ctx).Return(nil)
+				repoMock.On("RedisPing", ctx).Return(nil)
 				repoMock.On("DBPing", ctx).Return(nil)
 				return repoMock
 			},
@@ -52,7 +52,7 @@ func TestHealthCheckService_Check(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mocks.HealthCheck {
 				repoMock := mocks.NewHealthCheck(t)
-				repoMock.On("Ping", ctx).Return(redis.ErrPoolTimeout)
+				repoMock.On("RedisPing", ctx).Return(redis.ErrPoolTimeout)
 				return repoMock
 			},
 
@@ -69,7 +69,7 @@ func TestHealthCheckService_Check(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mocks.HealthCheck {
 				repoMock := mocks.NewHealthCheck(t)
-				repoMock.On("Ping", ctx).Return(nil)
+				repoMock.On("RedisPing", ctx).Return(nil)
 				repoMock.On("DBPing", ctx).Return(sql.ErrConnDone)
 				return repoMock
 			},
