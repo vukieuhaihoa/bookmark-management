@@ -38,7 +38,7 @@ func TestPasswordEndpoint(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			apiEngine := api.New(&api.Config{}, nil)
+			apiEngine := api.New(&api.Config{}, nil, nil)
 
 			respRec := tc.setupTestHTTP(apiEngine)
 

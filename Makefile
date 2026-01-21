@@ -15,25 +15,32 @@ export IMG_TAG
 
 COVERAGE_EXCLUDE=mocks|vendor|test|docs|main.go|config.go|client.go
 COVERAGE_THRESHOLD = 80
-
-.PHONY: swag-gen
-swag-gen:
-	swag init -g ./cmd/api/main.go --output ./docs
-
-.PHONY: run
-run: swag-gen
-	go run ./cmd/api/main.go
-
+COVERAGE_FOLDER=./coverage
+#=========================== DEV TOOLS =========================== 
 .PHONY: mock-gen
 mock-gen:
 	go generate ./...
 
+.PHONY: dev-up, dev-down, dev_run, swag-gen
+swag-gen:
+	swag init -g ./cmd/api/main.go --output ./docs
+
+dev-up:
+	docker-compose -f docker-compose.dev.yaml up -d
+
+dev-down:
+	docker-compose -f docker-compose.dev.yaml down
+
+dev-run: swag-gen
+	go run ./cmd/api/main.go
+
 .PHONY: test 
 test: clean
-	go test ./... -coverprofile=coverage.tmp -covermode=atomic -coverpkg=./... -p 1
-	grep -v -E "$(COVERAGE_EXCLUDE)" coverage.tmp > coverage.out
-	go tool cover -html=coverage.out -o coverage.html
-	@total=$$(go tool cover -func=coverage.out | grep total: | awk '{print $$3}' | sed 's/%//'); \
+	mkdir -p $(COVERAGE_FOLDER)
+	go test ./... -coverprofile=$(COVERAGE_FOLDER)/coverage.tmp -covermode=atomic -coverpkg=./... -p 1
+	grep -v -E "$(COVERAGE_EXCLUDE)" $(COVERAGE_FOLDER)/coverage.tmp > $(COVERAGE_FOLDER)/coverage.out
+	go tool cover -html=$(COVERAGE_FOLDER)/coverage.out -o $(COVERAGE_FOLDER)/coverage.html
+	@total=$$(go tool cover -func=$(COVERAGE_FOLDER)/coverage.out | grep total: | awk '{print $$3}' | sed 's/%//'); \
     if [ $$(echo "$$total < $(COVERAGE_THRESHOLD)" | bc -l) -eq 1 ]; then \
 	   echo "❌ Coverage ($$total%) is below threshold ($(COVERAGE_THRESHOLD)%)"; \
 	   exit 1; \
@@ -70,7 +77,7 @@ DOCKER_HUB_ACCESS_TOKEN ?=
 docker-login:
 	echo "$(DOCKER_HUB_ACCESS_TOKEN)" | docker login -u "$(DOCKER_HUB_USERNAME)" --password-stdin
 
-COVERAGE_FOLDER=./coverage
+
 docker-test:
 	mkdir -p $(COVERAGE_FOLDER)
 	docker buildx build --build-arg COVERAGE_EXCLUDE="$(COVERAGE_EXCLUDE)" --target test -t bookmark_service:dev --output $(COVERAGE_FOLDER) .
@@ -85,6 +92,6 @@ docker-test:
 .PHONY: clean
 clean:
 	go clean -testcache
-	rm -rf ./coverage
+	rm -rf $(COVERAGE_FOLDER)
 # 	docker rm -f redis || true
 

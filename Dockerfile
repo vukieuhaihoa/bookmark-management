@@ -1,14 +1,10 @@
 FROM golang:alpine AS base
-
 RUN mkdir -p /opt/app
-
 WORKDIR /opt/app
-
 RUN apk add build-base
 
 COPY go.mod ./go.mod
 COPY go.sum ./go.sum
-
 RUN go mod download
 
 COPY . .
