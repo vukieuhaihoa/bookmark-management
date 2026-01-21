@@ -37,8 +37,8 @@ func TestUser_CreateUser(t *testing.T) {
 
 		setupMockSvc func(ctx *gin.Context, inputRequest *createUserRequest) *svcMocks.User
 
-		expectedCode   int
-		verifyResponse func(t *testing.T, rec *httptest.ResponseRecorder, inputRequest *createUserRequest)
+		expectedCode     int
+		expectedResponse string
 	}{
 		{
 			name: "successful create user",
@@ -70,30 +70,8 @@ func TestUser_CreateUser(t *testing.T) {
 				return mockUserSvc
 			},
 
-			expectedCode: http.StatusCreated,
-			verifyResponse: func(t *testing.T, rec *httptest.ResponseRecorder, inputRequest *createUserRequest) {
-				// Parse the response body
-				var response createUserResponse
-				err := json.Unmarshal(rec.Body.Bytes(), &response)
-				assert.NoError(t, err, "Response should be valid JSON")
-
-				// Verify response structure
-				assert.NotNil(t, response.Data, "Data should not be nil")
-				assert.Equal(t, "Register an user successfully!", response.Message)
-
-				// Verify user data
-				assert.Equal(t, "de305d54-75b4-431b-adb2-eb6b9e546099", response.Data.ID)
-				assert.Equal(t, inputRequest.Username, response.Data.Username)
-				assert.Equal(t, inputRequest.DisplayName, response.Data.DisplayName)
-				assert.Equal(t, inputRequest.Email, response.Data.Email)
-
-				// Verify timestamps are set
-				assert.Equal(t, fixture.TestTime, response.Data.CreatedAt, "CreatedAt should be set")
-				assert.Equal(t, fixture.TestTime, response.Data.UpdatedAt, "UpdatedAt should be set")
-
-				// Password should not be in the response (due to json:"-" tag)
-				assert.Empty(t, response.Data.Password, "Password should not be in response")
-			},
+			expectedCode:     http.StatusCreated,
+			expectedResponse: `{"data":{"id":"de305d54-75b4-431b-adb2-eb6b9e546099","username":"testuser","email":"testuser@example.com","display_name":"Test User","created_at":"2023-01-01T00:00:00Z","updated_at":"2023-01-01T00:00:00Z"},"message":"Register an user successfully!"}`,
 		},
 		{
 			name: "invalid request body",
@@ -115,35 +93,8 @@ func TestUser_CreateUser(t *testing.T) {
 				return svcMocks.NewUser(t) // No expectations since service should not be called
 			},
 
-			expectedCode: http.StatusBadRequest,
-			verifyResponse: func(t *testing.T, rec *httptest.ResponseRecorder, inputRequest *createUserRequest) {
-				// Parse the response body
-				var respBody map[string]interface{}
-				err := json.Unmarshal(rec.Body.Bytes(), &respBody)
-				assert.NoError(t, err, "Response should be valid JSON")
-
-				// Verify error message structure
-				assert.Contains(t, respBody, "details")
-				details, ok := respBody["details"].([]interface{})
-				assert.True(t, ok, "Error details should be a list")
-
-				expectedErrors := []string{
-					"Username is invalid (required)",
-					"Password is invalid (min)",
-					"Email is invalid (email)",
-				}
-
-				var detailStrs []string
-				for _, d := range details {
-					if ds, ok := d.(string); ok {
-						detailStrs = append(detailStrs, ds)
-					}
-				}
-
-				for _, expectedErr := range expectedErrors {
-					assert.Contains(t, detailStrs, expectedErr)
-				}
-			},
+			expectedCode:     http.StatusBadRequest,
+			expectedResponse: `{"message":"Invalid input fields","details":["Username is invalid (required)","Password is invalid (min)","Email is invalid (email)"]}`,
 		},
 		{
 			name: "invalid request body - weak password",
@@ -165,33 +116,8 @@ func TestUser_CreateUser(t *testing.T) {
 				return svcMocks.NewUser(t) // No expectations since service should not be called
 			},
 
-			expectedCode: http.StatusBadRequest,
-			verifyResponse: func(t *testing.T, rec *httptest.ResponseRecorder, inputRequest *createUserRequest) {
-				// Parse the response body
-				var respBody map[string]interface{}
-				err := json.Unmarshal(rec.Body.Bytes(), &respBody)
-				assert.NoError(t, err, "Response should be valid JSON")
-
-				// Verify error message structure
-				assert.Contains(t, respBody, "details")
-				details, ok := respBody["details"].([]interface{})
-				assert.True(t, ok, "Error details should be a list")
-
-				expectedErrors := []string{
-					"Password is invalid (password_strength)",
-				}
-
-				var detailStrs []string
-				for _, d := range details {
-					if ds, ok := d.(string); ok {
-						detailStrs = append(detailStrs, ds)
-					}
-				}
-
-				for _, expectedErr := range expectedErrors {
-					assert.Contains(t, detailStrs, expectedErr)
-				}
-			},
+			expectedCode:     http.StatusBadRequest,
+			expectedResponse: `{"message":"Invalid input fields","details":["Password is invalid (password_strength)"]}`,
 		},
 		{
 			name: "service layer error",
@@ -216,16 +142,8 @@ func TestUser_CreateUser(t *testing.T) {
 				return mockUserSvc
 			},
 
-			expectedCode: http.StatusInternalServerError,
-			verifyResponse: func(t *testing.T, rec *httptest.ResponseRecorder, inputRequest *createUserRequest) {
-				// Parse the response body
-				var respBody map[string]interface{}
-				err := json.Unmarshal(rec.Body.Bytes(), &respBody)
-				assert.NoError(t, err, "Response should be valid JSON")
-
-				// Verify error message
-				assert.Equal(t, "Internal server error", respBody["message"])
-			},
+			expectedCode:     http.StatusInternalServerError,
+			expectedResponse: `{"message":"Internal server error"}`,
 		},
 	}
 	for _, tc := range testCases {
@@ -242,9 +160,7 @@ func TestUser_CreateUser(t *testing.T) {
 			userHandler.CreateUser(ctx)
 
 			assert.Equal(t, tc.expectedCode, rec.Code)
-			if tc.verifyResponse != nil {
-				tc.verifyResponse(t, rec, tc.inputRequest)
-			}
+			assert.Equal(t, tc.expectedResponse, strings.TrimSpace(rec.Body.String()))
 		})
 	}
 }
