@@ -61,7 +61,7 @@ func TestShortenURLEndpoint(t *testing.T) {
 			apiEngine := api.New(&api.Config{
 				ServiceName: "bookmark-service",
 				InstanceID:  "test_instance_id_1",
-			}, redisPkg.InitMockRedis(t), sqldb.InitMockDB(t))
+			}, redisPkg.InitMockRedis(t), sqldb.InitMockDB(t), nil, nil)
 
 			respRec := tc.setupTestHTTP(apiEngine)
 
@@ -138,7 +138,7 @@ func TestGetURLEndpoint(t *testing.T) {
 			apiEngine := api.New(&api.Config{
 				ServiceName: "bookmark-service",
 				InstanceID:  "test_instance_id_1",
-			}, mockRedis, nil)
+			}, mockRedis, nil, nil, nil)
 
 			respRec := tc.setupTestHTTP(apiEngine)
 

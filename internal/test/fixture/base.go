@@ -29,6 +29,27 @@ type Fixture interface {
 	DB() *gorm.DB
 }
 
+// base provides common functionality for all test fixtures.
+type base struct {
+	db *gorm.DB
+}
+
+// SetupDB sets up the database connection for the base fixture.
+//
+// Parameters:
+//   - db: The GORM database connection to be used for the fixture
+func (b *base) SetupDB(db *gorm.DB) {
+	b.db = db
+}
+
+// DB returns the GORM database connection used by the base fixture.
+//
+// Returns:
+//   - *gorm.DB: The GORM database connection
+func (b *base) DB() *gorm.DB {
+	return b.db
+}
+
 // NewFixture initializes the test fixture by setting up the database,
 // migrating the schema, and generating test data.
 //
