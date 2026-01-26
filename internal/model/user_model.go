@@ -8,6 +8,16 @@ import (
 )
 
 // User represents a user in the system.
+// It maps to the "users" table in the database.
+//
+// Fields:
+//   - ID: The unique identifier for the user (UUID).
+//   - Username: The username of the user (unique, not null).
+//   - Email: The email address of the user (unique, not null).
+//   - Password: The hashed password of the user (not null).
+//   - DisplayName: The display name of the user.
+//   - CreatedAt: The timestamp when the user was created.
+//   - UpdatedAt: The timestamp when the user was last updated.
 type User struct {
 	ID          string    `gorm:"primaryKey;type:uuid;column:id" json:"id"`
 	Username    string    `gorm:"unique;not null;column:username" json:"username"`

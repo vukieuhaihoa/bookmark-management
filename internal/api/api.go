@@ -14,9 +14,11 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/vukieuhaihoa/bookmark-management/docs"
+	"github.com/vukieuhaihoa/bookmark-management/internal/api/middleware"
 	"github.com/vukieuhaihoa/bookmark-management/internal/handler"
 	"github.com/vukieuhaihoa/bookmark-management/internal/repository"
 	"github.com/vukieuhaihoa/bookmark-management/internal/service"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/jwtutils"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/stringutils"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/validators"
 )
@@ -54,6 +56,10 @@ type api struct {
 	passwordHashing stringutils.PasswordHashing
 
 	db *gorm.DB
+
+	jwtGenerator jwtutils.JWTGenerator
+
+	jwtValidator jwtutils.JWTValidator
 }
 
 // New creates a new instance of the API server engine.
@@ -65,7 +71,7 @@ type api struct {
 //
 // Returns:
 //   - Engine: The initialized API server engine instance
-func New(cfg *Config, redisClient *redis.Client, db *gorm.DB) Engine {
+func New(cfg *Config, redisClient *redis.Client, db *gorm.DB, jwtGenerator jwtutils.JWTGenerator, jwtValidator jwtutils.JWTValidator) Engine {
 	a := &api{
 		app:             gin.New(),
 		cfg:             cfg,
@@ -73,6 +79,8 @@ func New(cfg *Config, redisClient *redis.Client, db *gorm.DB) Engine {
 		randomCodeGen:   stringutils.NewCodeGenerator(),
 		passwordHashing: stringutils.NewPasswordHashing(),
 		db:              db,
+		jwtGenerator:    jwtGenerator,
+		jwtValidator:    jwtValidator,
 	}
 
 	a.registerValidations()
@@ -104,6 +112,62 @@ func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // This method initializes services and handlers, then registers them with the Gin engine.
 // Currently registers the password generation endpoint.
 func (a *api) registerRoutes() {
+	allHandler := a.registerHandlers()
+
+	// Swagger info setup
+	docs.SwaggerInfo.Host = a.cfg.AppHostName
+
+	// Register health check endpoint
+	a.app.GET("/health-check", allHandler.healthCheckHandler.Check)
+	// Register Swagger documentation endpoint
+	a.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// API version group
+	v1 := a.app.Group("/v1")
+	{
+		// Register password generation endpoint
+		v1.GET("/generate-password", allHandler.passwordHandler.GeneratePassword)
+
+		// Register URL shortening endpoint
+		v1.POST("/links/shorten", allHandler.shortenURLHandler.ShortenURL)
+
+		// Redirect endpoint for shortened URLs by given code
+		v1.GET("/links/redirect/:code", allHandler.shortenURLHandler.GetURL)
+
+		v1.POST("/users/register", allHandler.userHandler.CreateUser)
+
+		v1.POST("/users/login", allHandler.userHandler.Login)
+
+	}
+
+	jwtMiddleware := middleware.NewJWTAuth(a.jwtValidator)
+	v1Private := a.app.Group("/v1")
+	v1Private.Use(jwtMiddleware.JWTAuth())
+	{
+		v1Private.GET("/self/info", allHandler.userHandler.GetProfile)
+		v1Private.PUT("/self/info", allHandler.userHandler.UpdateProfile)
+	}
+}
+
+func (a *api) registerValidations() {
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		// Register custom validation functions here
+		v.RegisterValidation("password_strength", validators.PasswordStrength)
+	}
+}
+
+// handler aggregates all HTTP handlers for different API endpoints.
+type handlers struct {
+	healthCheckHandler handler.HealthCheck
+
+	passwordHandler handler.Password
+
+	shortenURLHandler handler.ShortenURL
+
+	userHandler handler.User
+}
+
+func (a *api) registerHandlers() *handlers {
 	healthCheckRepo := repository.NewHealthCheck(a.redisClient, a.db)
 
 	passSvc := service.NewPassword(a.randomCodeGen)
@@ -117,38 +181,13 @@ func (a *api) registerRoutes() {
 	shortenURLHandler := handler.NewShortenURL(shortenURLSvc)
 
 	userRepo := repository.NewUser(a.db)
-	userSvc := service.NewUser(userRepo, a.passwordHashing)
+	userSvc := service.NewUser(userRepo, a.passwordHashing, a.jwtGenerator)
 	userHandler := handler.NewUser(userSvc)
 
-	// Swagger info setup
-	docs.SwaggerInfo.Host = a.cfg.AppHostName
-
-	// API version group
-	v1 := a.app.Group("/v1")
-	{
-		// Register password generation endpoint
-		v1.GET("/generate-password", passHandler.GeneratePassword)
-
-		// Register URL shortening endpoint
-		v1.POST("/links/shorten", shortenURLHandler.ShortenURL)
-
-		// Redirect endpoint for shortened URLs by given code
-		v1.GET("/links/redirect/:code", shortenURLHandler.GetURL)
-
-		v1.POST("/user/register", userHandler.CreateUser)
-	}
-
-	// Register health check endpoint
-	a.app.GET("/health-check", healthCheckHandler.Check)
-
-	// Register Swagger documentation endpoint
-	a.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-}
-
-func (a *api) registerValidations() {
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		// Register custom validation functions here
-		v.RegisterValidation("password_strength", validators.PasswordStrength)
+	return &handlers{
+		healthCheckHandler: healthCheckHandler,
+		passwordHandler:    passHandler,
+		shortenURLHandler:  shortenURLHandler,
+		userHandler:        userHandler,
 	}
 }
