@@ -3,7 +3,7 @@ package fixture
 import (
 	"time"
 
-	"github.com/vukieuhaihoa/bookmark-management/internal/model"
+	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
 	"gorm.io/gorm"
 )
 

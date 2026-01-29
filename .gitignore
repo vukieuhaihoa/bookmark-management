@@ -21,6 +21,7 @@ coverage.html
 
 pgdata/
 cmd/test/
+cmd/migrate/
 
 # RSA keys
 private_key.pem

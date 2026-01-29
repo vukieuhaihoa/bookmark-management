@@ -11,15 +11,28 @@ import (
 	"github.com/redis/go-redis/v9"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/vukieuhaihoa/bookmark-management/docs"
 	"gorm.io/gorm"
 
-	"github.com/vukieuhaihoa/bookmark-management/docs"
 	"github.com/vukieuhaihoa/bookmark-management/internal/api/middleware"
-	"github.com/vukieuhaihoa/bookmark-management/internal/handler"
-	"github.com/vukieuhaihoa/bookmark-management/internal/repository"
-	"github.com/vukieuhaihoa/bookmark-management/internal/service"
+
+	healthCheckHandler "github.com/vukieuhaihoa/bookmark-management/internal/app/handler/healthcheck"
+	healthCheckRepository "github.com/vukieuhaihoa/bookmark-management/internal/app/repository/healthcheck"
+	healthCheckService "github.com/vukieuhaihoa/bookmark-management/internal/app/service/healthcheck"
+
+	linkHandler "github.com/vukieuhaihoa/bookmark-management/internal/app/handler/link"
+	linkRepository "github.com/vukieuhaihoa/bookmark-management/internal/app/repository/link"
+	linkService "github.com/vukieuhaihoa/bookmark-management/internal/app/service/link"
+
+	passwordHandler "github.com/vukieuhaihoa/bookmark-management/internal/app/handler/random_code_gen"
+	passwordService "github.com/vukieuhaihoa/bookmark-management/internal/app/service/random_code_gen"
+
+	userHandler "github.com/vukieuhaihoa/bookmark-management/internal/app/handler/user"
+	userRepository "github.com/vukieuhaihoa/bookmark-management/internal/app/repository/user"
+	userService "github.com/vukieuhaihoa/bookmark-management/internal/app/service/user"
+
 	"github.com/vukieuhaihoa/bookmark-management/pkg/jwtutils"
-	"github.com/vukieuhaihoa/bookmark-management/pkg/stringutils"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/validators"
 )
 
@@ -51,9 +64,9 @@ type api struct {
 	redisClient *redis.Client
 
 	// randomCodeGen is the code generator used for generating random codes
-	randomCodeGen stringutils.CodeGenerator
+	randomCodeGen utils.CodeGenerator
 
-	passwordHashing stringutils.PasswordHashing
+	passwordHashing utils.PasswordHashing
 
 	db *gorm.DB
 
@@ -62,25 +75,35 @@ type api struct {
 	jwtValidator jwtutils.JWTValidator
 }
 
-// New creates a new instance of the API server engine.
-// It initializes the Gin engine, configures routes, and prepares the server for handling requests.
+type EngineOpts struct {
+	Engine          *gin.Engine
+	Cfg             *Config
+	RedisClient     *redis.Client
+	SqlDB           *gorm.DB
+	RandomCodeGen   utils.CodeGenerator
+	PasswordHashing utils.PasswordHashing
+	JWTGenerator    jwtutils.JWTGenerator
+	JWTValidator    jwtutils.JWTValidator
+}
+
+// New creates a new instance of the API engine with the provided options.
+// It initializes the Gin engine, configures routes, and sets up middleware.
 //
 // Parameters:
-//   - cfg: The configuration settings for the API server
-//   - redisClient: The Redis client used for caching and session management
+//   - opts: EngineOpts containing dependencies and configurations for the API engine
 //
 // Returns:
-//   - Engine: The initialized API server engine instance
-func New(cfg *Config, redisClient *redis.Client, db *gorm.DB, jwtGenerator jwtutils.JWTGenerator, jwtValidator jwtutils.JWTValidator) Engine {
+//   - Engine: An instance of the API engine implementing the Engine interface
+func New(opts *EngineOpts) Engine {
 	a := &api{
-		app:             gin.New(),
-		cfg:             cfg,
-		redisClient:     redisClient,
-		randomCodeGen:   stringutils.NewCodeGenerator(),
-		passwordHashing: stringutils.NewPasswordHashing(),
-		db:              db,
-		jwtGenerator:    jwtGenerator,
-		jwtValidator:    jwtValidator,
+		app:             opts.Engine,
+		cfg:             opts.Cfg,
+		redisClient:     opts.RedisClient,
+		randomCodeGen:   opts.RandomCodeGen,
+		passwordHashing: opts.PasswordHashing,
+		db:              opts.SqlDB,
+		jwtGenerator:    opts.JWTGenerator,
+		jwtValidator:    opts.JWTValidator,
 	}
 
 	a.registerValidations()
@@ -158,31 +181,27 @@ func (a *api) registerValidations() {
 
 // handler aggregates all HTTP handlers for different API endpoints.
 type handlers struct {
-	healthCheckHandler handler.HealthCheck
-
-	passwordHandler handler.Password
-
-	shortenURLHandler handler.ShortenURL
-
-	userHandler handler.User
+	healthCheckHandler healthCheckHandler.Handler
+	passwordHandler    passwordHandler.Handler
+	shortenURLHandler  linkHandler.Handler
+	userHandler        userHandler.Handler
 }
 
 func (a *api) registerHandlers() *handlers {
-	healthCheckRepo := repository.NewHealthCheck(a.redisClient, a.db)
+	passSvc := passwordService.NewPasswordService(a.randomCodeGen)
+	passHandler := passwordHandler.NewPasswordHandler(passSvc)
 
-	passSvc := service.NewPassword(a.randomCodeGen)
-	passHandler := handler.NewPassword(passSvc)
+	healthCheckRepo := healthCheckRepository.NewHealthCheckRepository(a.redisClient, a.db)
+	healthCheckSvc := healthCheckService.NewHealthCheckService(a.cfg.ServiceName, a.cfg.InstanceID, healthCheckRepo)
+	healthCheckHandler := healthCheckHandler.NewHealthCheckHandler(healthCheckSvc)
 
-	healthCheckSvc := service.NewHealthCheck(a.cfg.ServiceName, a.cfg.InstanceID, healthCheckRepo)
-	healthCheckHandler := handler.NewHealthCheck(healthCheckSvc)
+	shortenURLRepo := linkRepository.NewLinkRepository(a.redisClient)
+	shortenURLSvc := linkService.NewLinkService(shortenURLRepo, a.randomCodeGen)
+	shortenURLHandler := linkHandler.NewLinkHandler(shortenURLSvc)
 
-	shortenURLRepo := repository.NewUrlStorage(a.redisClient)
-	shortenURLSvc := service.NewShortenURL(shortenURLRepo, a.randomCodeGen)
-	shortenURLHandler := handler.NewShortenURL(shortenURLSvc)
-
-	userRepo := repository.NewUser(a.db)
-	userSvc := service.NewUser(userRepo, a.passwordHashing, a.jwtGenerator)
-	userHandler := handler.NewUser(userSvc)
+	userRepo := userRepository.NewUserRepository(a.db)
+	userSvc := userService.NewUserService(userRepo, a.passwordHashing, a.jwtGenerator)
+	userHandler := userHandler.NewUserHandler(userSvc)
 
 	return &handlers{
 		healthCheckHandler: healthCheckHandler,

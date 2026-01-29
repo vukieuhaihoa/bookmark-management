@@ -64,15 +64,10 @@ func (j *jwtAuth) JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		// set user_id to context
-		userID, ok := claims["sub"].(string)
-		if !ok {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response.InvalidTokenResponse)
-			return
-		}
+		// set claims to context
+		c.Set("claims", claims)
 
-		c.Set("userID", userID)
-
+		// proceed to the next handler
 		c.Next()
 	}
 }
