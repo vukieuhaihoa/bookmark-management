@@ -31,12 +31,14 @@ func TestService_GetUserByID(t *testing.T) {
 			setupMockUserRepo: func(ctx context.Context) *mockUserRepo.Repository {
 				repoMock := mockUserRepo.NewRepository(t)
 				repoMock.On("GetUserByID", ctx, "de305d54-75b4-431b-adb2-eb6b9e546099").Return(&model.User{
-					ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
+					Base: model.Base{
+						ID:        "de305d54-75b4-431b-adb2-eb6b9e546099",
+						CreatedAt: fixture.TestTime,
+						UpdatedAt: fixture.TestTime,
+					},
 					Username:    "testuser",
 					DisplayName: "Test User",
 					Email:       "testuser@example.com",
-					CreatedAt:   fixture.TestTime,
-					UpdatedAt:   fixture.TestTime,
 				}, nil)
 				return repoMock
 			},
@@ -44,12 +46,14 @@ func TestService_GetUserByID(t *testing.T) {
 			inputUserID: "de305d54-75b4-431b-adb2-eb6b9e546099",
 
 			expectedOutput: &model.User{
-				ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
+				Base: model.Base{
+					ID:        "de305d54-75b4-431b-adb2-eb6b9e546099",
+					CreatedAt: fixture.TestTime,
+					UpdatedAt: fixture.TestTime,
+				},
 				Username:    "testuser",
 				DisplayName: "Test User",
 				Email:       "testuser@example.com",
-				CreatedAt:   fixture.TestTime,
-				UpdatedAt:   fixture.TestTime,
 			},
 		},
 		{

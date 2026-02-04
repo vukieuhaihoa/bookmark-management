@@ -1,34 +1,53 @@
 basePath: /
 definitions:
-  handler.createUserRequest:
-    properties:
-      display_name:
-        example: Test User
-        type: string
-      email:
-        example: testuser001@example.com
-        type: string
-      password:
-        example: my_SECURE_password123@
-        minLength: 8
-        type: string
-      username:
-        example: testuser001
-        type: string
-    required:
-    - display_name
-    - email
-    - password
-    - username
-    type: object
-  handler.createUserResponse:
+  bookmark.ListBookmarksResponse:
     properties:
       data:
-        $ref: '#/definitions/model.User'
+        items:
+          $ref: '#/definitions/model.Bookmark'
+        type: array
+      pagination:
+        $ref: '#/definitions/common.Paging'
+    type: object
+  bookmark.createBookmarkRequest:
+    properties:
+      description:
+        example: A sample bookmark
+        type: string
+      url:
+        example: https://example.com
+        type: string
+    required:
+    - description
+    - url
+    type: object
+  bookmark.createBookmarkResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.Bookmark'
       message:
         type: string
     type: object
-  handler.healthCheckResponse:
+  bookmark.updateBookmarkRequest:
+    properties:
+      description:
+        type: string
+      url:
+        type: string
+    required:
+    - description
+    - url
+    type: object
+  common.Paging:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  healthcheck.healthCheckResponse:
     properties:
       instance_id:
         type: string
@@ -37,27 +56,7 @@ definitions:
       service_name:
         type: string
     type: object
-  handler.loginRequest:
-    properties:
-      password:
-        example: my_SECURE_password123@
-        minLength: 8
-        type: string
-      username:
-        example: testuser001
-        type: string
-    required:
-    - password
-    - username
-    type: object
-  handler.loginResponse:
-    properties:
-      data:
-        type: string
-      message:
-        type: string
-    type: object
-  handler.shortenURLRequest:
+  link.shortenURLRequest:
     properties:
       exp:
         maximum: 604800
@@ -68,24 +67,27 @@ definitions:
     - exp
     - url
     type: object
-  handler.shortenURLResponse:
+  link.shortenURLResponse:
     properties:
       code:
         type: string
       message:
         type: string
     type: object
-  handler.updateProfileRequest:
+  model.Bookmark:
     properties:
-      display_name:
-        example: Updated User 001
+      code:
         type: string
-      email:
-        example: updatedtestuser001@example.com
+      created_at:
         type: string
-    required:
-    - display_name
-    - email
+      description:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
     type: object
   model.User:
     properties:
@@ -108,6 +110,66 @@ definitions:
       message:
         type: string
     type: object
+  user.createUserRequest:
+    properties:
+      display_name:
+        example: Test User
+        type: string
+      email:
+        example: testuser001@example.com
+        type: string
+      password:
+        example: my_SECURE_password123@
+        minLength: 8
+        type: string
+      username:
+        example: testuser001
+        type: string
+    required:
+    - display_name
+    - email
+    - password
+    - username
+    type: object
+  user.createUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.User'
+      message:
+        type: string
+    type: object
+  user.loginRequest:
+    properties:
+      password:
+        example: my_SECURE_password123@
+        minLength: 8
+        type: string
+      username:
+        example: testuser001
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  user.loginResponse:
+    properties:
+      data:
+        type: string
+      message:
+        type: string
+    type: object
+  user.updateProfileRequest:
+    properties:
+      display_name:
+        example: Updated User 001
+        type: string
+      email:
+        example: updatedtestuser001@example.com
+        type: string
+    required:
+    - display_name
+    - email
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -124,10 +186,167 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.healthCheckResponse'
+            $ref: '#/definitions/healthcheck.healthCheckResponse'
       summary: Health Check
       tags:
       - health
+  /v1/bookmarks:
+    get:
+      description: Retrieve a list of bookmarks for the authenticated user with pagination
+        and sorting
+      parameters:
+      - default: 1
+        description: Page number
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - default: 5
+        description: Number of items per page
+        example: 5
+        in: query
+        name: limit
+        type: integer
+      - default: -createdAt
+        description: Sorting criteria(
+        example: -createdAt,description
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bookmark.ListBookmarksResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Message'
+      security:
+      - Bearer: []
+      summary: List bookmarks
+      tags:
+      - Bookmarks
+    post:
+      consumes:
+      - application/json
+      description: Create a new bookmark for the authenticated user
+      parameters:
+      - description: Create Bookmark Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bookmark.createBookmarkRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/bookmark.createBookmarkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Message'
+      security:
+      - Bearer: []
+      summary: Create a new bookmark
+      tags:
+      - Bookmarks
+  /v1/bookmarks/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete bookmark by ID for authenticated user
+      parameters:
+      - description: Bookmark ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Message'
+      security:
+      - Bearer: []
+      summary: Delete bookmark by ID
+      tags:
+      - Bookmarks
+    put:
+      consumes:
+      - application/json
+      description: Update bookmark by ID for authenticated user
+      parameters:
+      - description: Bookmark ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Bookmark update info
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/bookmark.updateBookmarkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Message'
+      security:
+      - BearerAuth: []
+      summary: Update bookmark by ID
+      tags:
+      - Bookmarks
   /v1/generate-password:
     get:
       description: Generates a cryptographically secure random password of fixed length.
@@ -162,15 +381,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.shortenURLResponse'
+            $ref: '#/definitions/link.shortenURLResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.shortenURLResponse'
+            $ref: '#/definitions/link.shortenURLResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.shortenURLResponse'
+            $ref: '#/definitions/link.shortenURLResponse'
       summary: Get original URL
       tags:
       - URL
@@ -185,22 +404,22 @@ paths:
         name: shortenURLRequest
         required: true
         schema:
-          $ref: '#/definitions/handler.shortenURLRequest'
+          $ref: '#/definitions/link.shortenURLRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.shortenURLResponse'
+            $ref: '#/definitions/link.shortenURLResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.shortenURLResponse'
+            $ref: '#/definitions/link.shortenURLResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.shortenURLResponse'
+            $ref: '#/definitions/link.shortenURLResponse'
       summary: Shorten a URL
       tags:
       - URL
@@ -213,7 +432,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.createUserResponse'
+            $ref: '#/definitions/user.createUserResponse'
         "401":
           description: Unauthorized
           schema:
@@ -237,7 +456,7 @@ paths:
         name: profile
         required: true
         schema:
-          $ref: '#/definitions/handler.updateProfileRequest'
+          $ref: '#/definitions/user.updateProfileRequest'
       produces:
       - application/json
       responses:
@@ -273,14 +492,14 @@ paths:
         name: credentials
         required: true
         schema:
-          $ref: '#/definitions/handler.loginRequest'
+          $ref: '#/definitions/user.loginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.loginResponse'
+            $ref: '#/definitions/user.loginResponse'
         "400":
           description: Bad Request
           schema:
@@ -307,14 +526,14 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/handler.createUserRequest'
+          $ref: '#/definitions/user.createUserRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/handler.createUserResponse'
+            $ref: '#/definitions/user.createUserResponse'
         "400":
           description: Bad Request
           schema:

@@ -32,7 +32,8 @@ func TestUser_CreateUser(t *testing.T) {
 			},
 
 			inputUser: &model.User{
-				ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
+				Base: model.Base{
+					ID: "de305d54-75b4-431b-adb2-eb6b9e546099"},
 				DisplayName: "New User",
 				Username:    "New User",
 				Password:    "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e",
@@ -40,7 +41,8 @@ func TestUser_CreateUser(t *testing.T) {
 			},
 
 			expectedOutput: &model.User{
-				ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
+				Base: model.Base{
+					ID: "de305d54-75b4-431b-adb2-eb6b9e546099"},
 				DisplayName: "New User",
 				Username:    "New User",
 				Password:    "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e",
@@ -75,7 +77,8 @@ func TestUser_CreateUser(t *testing.T) {
 			},
 
 			inputUser: &model.User{
-				ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
+				Base: model.Base{
+					ID: "de305d54-75b4-431b-adb2-eb6b9e546099"},
 				DisplayName: "Another User",
 				Username:    "Alice", // duplicate username
 				Password:    "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e",
@@ -92,7 +95,8 @@ func TestUser_CreateUser(t *testing.T) {
 			},
 
 			inputUser: &model.User{
-				ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
+				Base: model.Base{
+					ID: "de305d54-75b4-431b-adb2-eb6b9e546099"},
 				DisplayName: "Another User",
 				Username:    "AnotherUser",
 				Password:    "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e",

@@ -18,7 +18,7 @@ import (
 // Returns:
 //   - *gorm.DB: A gorm.DB instance connected to the in-memory SQLite database
 func InitMockDB(t *testing.T) *gorm.DB {
-	cdn := fmt.Sprintf("file:%s?mode=memory&cache=shared", uuid.New().String())
+	cdn := fmt.Sprintf("file:%s?mode=memory&cache=shared&_foreign_keys=on", uuid.New().String())
 
 	db, err := gorm.Open(sqlite.Open(cdn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),

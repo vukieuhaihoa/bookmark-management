@@ -45,7 +45,9 @@ func TestService_CreateUser(t *testing.T) {
 					DisplayName: "Test User",
 					Email:       "testuser@example.com",
 				}).Return(&model.User{
-					ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
+					Base: model.Base{
+						ID: "de305d54-75b4-431b-adb2-eb6b9e546099",
+					},
 					Username:    "testuser",
 					Password:    "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e",
 					DisplayName: "Test User",
@@ -60,7 +62,9 @@ func TestService_CreateUser(t *testing.T) {
 			inputEmail:       "testuser@example.com",
 
 			expectedOutput: &model.User{
-				ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
+				Base: model.Base{
+					ID: "de305d54-75b4-431b-adb2-eb6b9e546099",
+				},
 				Username:    "testuser",
 				Password:    "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e",
 				DisplayName: "Test User",

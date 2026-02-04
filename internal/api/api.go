@@ -16,6 +16,10 @@ import (
 
 	"github.com/vukieuhaihoa/bookmark-management/internal/api/middleware"
 
+	bookmarkHandler "github.com/vukieuhaihoa/bookmark-management/internal/app/handler/bookmark"
+	bookmarkRepository "github.com/vukieuhaihoa/bookmark-management/internal/app/repository/bookmark"
+	bookmarkService "github.com/vukieuhaihoa/bookmark-management/internal/app/service/bookmark"
+
 	healthCheckHandler "github.com/vukieuhaihoa/bookmark-management/internal/app/handler/healthcheck"
 	healthCheckRepository "github.com/vukieuhaihoa/bookmark-management/internal/app/repository/healthcheck"
 	healthCheckService "github.com/vukieuhaihoa/bookmark-management/internal/app/service/healthcheck"
@@ -169,6 +173,11 @@ func (a *api) registerRoutes() {
 	{
 		v1Private.GET("/self/info", allHandler.userHandler.GetProfile)
 		v1Private.PUT("/self/info", allHandler.userHandler.UpdateProfile)
+
+		v1Private.POST("/bookmarks", allHandler.bookmarkHandler.CreateBookmark)
+		v1Private.GET("/bookmarks", allHandler.bookmarkHandler.ListBookmarks)
+		v1Private.PUT("/bookmarks/:id", allHandler.bookmarkHandler.UpdateBookmarkByID)
+		v1Private.DELETE("/bookmarks/:id", allHandler.bookmarkHandler.DeleteBookmarkByID)
 	}
 }
 
@@ -185,6 +194,7 @@ type handlers struct {
 	passwordHandler    passwordHandler.Handler
 	shortenURLHandler  linkHandler.Handler
 	userHandler        userHandler.Handler
+	bookmarkHandler    bookmarkHandler.Handler
 }
 
 func (a *api) registerHandlers() *handlers {
@@ -203,10 +213,15 @@ func (a *api) registerHandlers() *handlers {
 	userSvc := userService.NewUserService(userRepo, a.passwordHashing, a.jwtGenerator)
 	userHandler := userHandler.NewUserHandler(userSvc)
 
+	bookmarkRepo := bookmarkRepository.NewBookmarkRepository(a.db)
+	bookmarkSvc := bookmarkService.NewBookmarkService(bookmarkRepo, a.randomCodeGen)
+	bookmarkHandler := bookmarkHandler.NewBookmarkHandler(bookmarkSvc)
+
 	return &handlers{
 		healthCheckHandler: healthCheckHandler,
 		passwordHandler:    passHandler,
 		shortenURLHandler:  shortenURLHandler,
 		userHandler:        userHandler,
+		bookmarkHandler:    bookmarkHandler,
 	}
 }

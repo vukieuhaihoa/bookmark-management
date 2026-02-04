@@ -32,12 +32,14 @@ func TestUser_GetUserByUsername(t *testing.T) {
 			inputUsername: "Bob",
 
 			expectedOutput: &model.User{
-				ID:          "123e4567-e89b-12d3-a456-eb6b9e546001",
+				Base: model.Base{
+					ID:        "123e4567-e89b-12d3-a456-eb6b9e546001",
+					CreatedAt: fixture.TestTime,
+					UpdatedAt: fixture.TestTime,
+				},
 				Username:    "Bob",
 				DisplayName: "Bob",
 				Email:       "bob@example.com",
-				CreatedAt:   fixture.TestTime,
-				UpdatedAt:   fixture.TestTime,
 			},
 		},
 		{

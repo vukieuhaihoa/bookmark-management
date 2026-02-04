@@ -1,4 +1,4 @@
-package endpoint
+package healthcheck
 
 import (
 	"net/http"
@@ -12,7 +12,7 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/pkg/sqldb"
 )
 
-func TestHealthCheckEndpoint(t *testing.T) {
+func TestHealthCheckEndpoint_HealthCheck(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {

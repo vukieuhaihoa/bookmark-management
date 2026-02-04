@@ -12,6 +12,9 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 )
 
+// CreateAPIConfig initializes and returns the API configuration.
+// Returns:
+//   - *api.Config: A pointer to the initialized API configuration.
 func CreateAPIConfig() *api.Config {
 	cfg, err := api.NewConfig()
 	common.HandlerError(err)
@@ -19,6 +22,10 @@ func CreateAPIConfig() *api.Config {
 	return cfg
 }
 
+// CreatAPI initializes and returns the API engine.
+// It sets up all necessary dependencies including database connections, JWT providers, and other services.
+// Returns:
+//   - api.Engine: The initialized API engine.
 func CreatAPI() api.Engine {
 	logger.SetLogLevel()
 

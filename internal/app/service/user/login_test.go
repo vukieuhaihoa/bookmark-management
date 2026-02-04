@@ -39,7 +39,9 @@ func TestService_Login(t *testing.T) {
 			setupMockUserRepo: func(ctx context.Context) *mockUserRepo.Repository {
 				repoMock := mockUserRepo.NewRepository(t)
 				repoMock.On("GetUserByUsername", ctx, "testuser").Return(&model.User{
-					ID:       "de305d54-75b4-431b-adb2-eb6b9e546099",
+					Base: model.Base{
+						ID: "de305d54-75b4-431b-adb2-eb6b9e546099",
+					},
 					Username: "testuser",
 					Password: "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e", // hash for "password123"
 				}, nil)
@@ -105,7 +107,9 @@ func TestService_Login(t *testing.T) {
 			setupMockUserRepo: func(ctx context.Context) *mockUserRepo.Repository {
 				repoMock := mockUserRepo.NewRepository(t)
 				repoMock.On("GetUserByUsername", ctx, "testuser").Return(&model.User{
-					ID:       "de305d54-75b4-431b-adb2-eb6b9e546099",
+					Base: model.Base{
+						ID: "de305d54-75b4-431b-adb2-eb6b9e546099",
+					},
 					Username: "testuser",
 					Password: "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e", // hash for "password123"
 				}, nil)
@@ -132,7 +136,9 @@ func TestService_Login(t *testing.T) {
 			setupMockUserRepo: func(ctx context.Context) *mockUserRepo.Repository {
 				repoMock := mockUserRepo.NewRepository(t)
 				repoMock.On("GetUserByUsername", ctx, "testuser").Return(&model.User{
-					ID:       "de305d54-75b4-431b-adb2-eb6b9e546099",
+					Base: model.Base{
+						ID: "de305d54-75b4-431b-adb2-eb6b9e546099",
+					},
 					Username: "testuser",
 					Password: "$2a$10$7EqJtq98hPqEX7fNZaFWoOHi6rS8nY7b1p6K5j5p6v5Q5Z5Z5Z5e", // hash for "password123"
 				}, nil)

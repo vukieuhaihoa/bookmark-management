@@ -64,15 +64,17 @@ func TestHandler_CreateUser(t *testing.T) {
 						Username:    inputRequest.Username,
 						DisplayName: inputRequest.DisplayName,
 						Email:       inputRequest.Email,
-						ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
-						CreatedAt:   fixture.TestTime,
-						UpdatedAt:   fixture.TestTime,
+						Base: model.Base{
+							ID:        "de305d54-75b4-431b-adb2-eb6b9e546099",
+							CreatedAt: fixture.TestTime,
+							UpdatedAt: fixture.TestTime,
+						},
 					}, nil)
 				return mockUserSvc
 			},
 
 			expectedCode:     http.StatusCreated,
-			expectedResponse: `{"data":{"id":"de305d54-75b4-431b-adb2-eb6b9e546099","username":"testuser","email":"testuser@example.com","display_name":"Test User","created_at":"2023-01-01T00:00:00Z","updated_at":"2023-01-01T00:00:00Z"},"message":"Register an user successfully!"}`,
+			expectedResponse: `{"data":{"id":"de305d54-75b4-431b-adb2-eb6b9e546099","created_at":"2023-01-01T00:00:00Z","updated_at":"2023-01-01T00:00:00Z","username":"testuser","email":"testuser@example.com","display_name":"Test User"},"message":"Register an user successfully!"}`,
 		},
 		{
 			name: "invalid request body",

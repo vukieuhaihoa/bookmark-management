@@ -46,18 +46,20 @@ func TestHandler_GetProfile(t *testing.T) {
 				mockUserSvc := svcMocks.NewService(t)
 				mockUserSvc.On("GetUserByID", mock.Anything, "de305d54-75b4-431b-adb2-eb6b9e546099").
 					Return(&model.User{
-						ID:          "de305d54-75b4-431b-adb2-eb6b9e546099",
+						Base: model.Base{
+							ID:        "de305d54-75b4-431b-adb2-eb6b9e546099",
+							CreatedAt: fixture.TestTime,
+							UpdatedAt: fixture.TestTime,
+						},
 						Username:    "testuser",
 						Email:       "testuser@example.com",
 						DisplayName: "Test User",
-						CreatedAt:   fixture.TestTime,
-						UpdatedAt:   fixture.TestTime,
 					}, nil)
 				return mockUserSvc
 			},
 
 			expectedCode:     http.StatusOK,
-			expectedResponse: `{"data":{"id":"de305d54-75b4-431b-adb2-eb6b9e546099","username":"testuser","email":"testuser@example.com","display_name":"Test User","created_at":"2023-01-01T00:00:00Z","updated_at":"2023-01-01T00:00:00Z"},"message":"User profile retrieved successfully!"}`,
+			expectedResponse: `{"data":{"id":"de305d54-75b4-431b-adb2-eb6b9e546099","created_at":"2023-01-01T00:00:00Z","updated_at":"2023-01-01T00:00:00Z","username":"testuser","email":"testuser@example.com","display_name":"Test User"},"message":"User profile retrieved successfully!"}`,
 		},
 		{
 			name: "unauthenticated request",

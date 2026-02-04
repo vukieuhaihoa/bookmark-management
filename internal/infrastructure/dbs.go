@@ -1,8 +1,6 @@
 package infrastructure
 
 import (
-	"os/user"
-
 	"github.com/redis/go-redis/v9"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/common"
 	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
@@ -41,5 +39,5 @@ func CreateSQLDBAndMigration() *gorm.DB {
 // Returns:
 //   - error: An error object if the migration fails, otherwise nil
 func MigrateDB(db *gorm.DB) error {
-	return db.AutoMigrate(&user.User{})
+	return sqldb.MigrateSQLDB(db, "file://./migrations", "up", 0)
 }

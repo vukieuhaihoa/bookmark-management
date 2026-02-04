@@ -2,10 +2,13 @@ package fixture
 
 import (
 	"testing"
+	"time"
 
 	"github.com/vukieuhaihoa/bookmark-management/pkg/sqldb"
 	"gorm.io/gorm"
 )
+
+var TestTime = time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC)
 
 // Fixture defines the interface for setting up test fixtures in the database.
 type Fixture interface {

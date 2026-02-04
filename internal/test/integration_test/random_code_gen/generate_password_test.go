@@ -1,4 +1,4 @@
-package endpoint
+package random_code_gen
 
 import (
 	"net/http"
@@ -11,7 +11,7 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 )
 
-func TestPasswordEndpoint(t *testing.T) {
+func TestPasswordEndpoint_GeneratePassword(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
