@@ -47,7 +47,7 @@ type SortedField struct {
 //	//     {Field: "created_at", Direction: SortDesc},
 //	//     {Field: "updated_at", Direction: SortAsc},
 //	// }
-func ParseSortParams(sort string, allowed map[string]bool) ([]SortedField, error) {
+func ParseSortParams(sort string, allowed map[string]struct{}) ([]SortedField, error) {
 	if sort == "" {
 		return []SortedField{
 			{
@@ -68,8 +68,8 @@ func ParseSortParams(sort string, allowed map[string]bool) ([]SortedField, error
 			field = strings.TrimPrefix(part, "-")
 		}
 
-		isAllowed, ok := allowed[field]
-		if !ok || !isAllowed {
+		_, ok := allowed[field]
+		if !ok {
 			return nil, ErrInvalidSortField
 		}
 

@@ -8,16 +8,16 @@ import (
 
 func Test_ParseSortParams(t *testing.T) {
 
-	allowed := map[string]bool{
-		"created_at": true,
-		"updated_at": true,
+	allowed := map[string]struct{}{
+		"created_at": {},
+		"updated_at": {},
 	}
 
 	tests := []struct {
 		name string
 
 		sort    string
-		allowed map[string]bool
+		allowed map[string]struct{}
 		want    []SortedField
 		wantErr error
 	}{

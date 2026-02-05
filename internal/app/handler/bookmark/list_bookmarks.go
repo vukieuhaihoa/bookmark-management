@@ -15,11 +15,11 @@ import (
 )
 
 // allowedSortFields maps the allowed sorting fields from query parameters to database column names.
-var allowedSortFields = map[string]bool{
-	"created_at":  true,
-	"updated_at":  true,
-	"url":         true,
-	"description": true,
+var allowedSortFields = map[string]struct{}{
+	"created_at":  {},
+	"updated_at":  {},
+	"url":         {},
+	"description": {},
 }
 
 // PagingRequest represents the expected query parameters for pagination and sorting when listing bookmarks.

@@ -24,6 +24,8 @@ func GetJWTClaimsFromRequest(ctx *gin.Context) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
+// GetUserIDFromJWTClaims retrieves the user ID from JWT claims in the Gin context.
+// It looks for the "sub" claim which is expected to contain the user ID.
 func GetUserIDFromJWTClaims(ctx *gin.Context) (string, error) {
 	claims, err := GetJWTClaimsFromRequest(ctx)
 	if err != nil {
