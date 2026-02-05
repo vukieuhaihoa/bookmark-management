@@ -8,8 +8,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/handler/utils"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/common"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
-	"github.com/vukieuhaihoa/bookmark-management/pkg/response"
 )
 
 // createBookmarkRequest represents the expected payload for creating a new bookmark.
@@ -32,32 +32,32 @@ type createBookmarkResponse struct {
 // @Produce      json
 // @Param        request  body      createBookmarkRequest  true  "Create Bookmark Request"
 // @Success      201      {object}  createBookmarkResponse
-// @Failure      400      {object}  response.Message
-// @Failure      401      {object}  response.Message
-// @Failure      500      {object}  response.Message
+// @Failure      400      {object}  common.Message
+// @Failure      401      {object}  common.Message
+// @Failure      500      {object}  common.Message
 // @Security     Bearer
 // @Router       /v1/bookmarks [post]
 func (h *bookmarkHandler) CreateBookmark(c *gin.Context) {
 	// Implementation of the handler to create a bookmark
 	input := &createBookmarkRequest{}
 	if err := c.ShouldBindJSON(input); err != nil {
-		c.JSON(http.StatusBadRequest, response.InputErrorResponse)
+		c.JSON(http.StatusBadRequest, common.InputErrorResponse)
 		return
 	}
 
 	userID, err := utils.GetUserIDFromJWTClaims(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, response.UnauthorizedResponse)
+		c.JSON(http.StatusUnauthorized, common.UnauthorizedResponse)
 		return
 	}
 
 	bookmark, err := h.svc.CreateBookmark(c, input.URL, input.Description, userID)
 	switch {
 	case errors.Is(err, dbutils.ErrDuplicationType):
-		c.JSON(http.StatusBadRequest, response.InputErrorResponse)
+		c.JSON(http.StatusBadRequest, common.InputErrorResponse)
 		return
 	case errors.Is(err, dbutils.ErrForeignKeyType):
-		c.JSON(http.StatusUnauthorized, response.UnauthorizedResponse)
+		c.JSON(http.StatusUnauthorized, common.UnauthorizedResponse)
 		return
 	case errors.Is(err, nil):
 	default:
@@ -65,7 +65,7 @@ func (h *bookmarkHandler) CreateBookmark(c *gin.Context) {
 			Str("operation", "CreateBookmark").
 			Err(err).
 			Msg("service return error when create bookmark")
-		c.JSON(http.StatusInternalServerError, response.InternalErrorResponse)
+		c.JSON(http.StatusInternalServerError, common.InternalErrorResponse)
 		return
 	}
 
