@@ -13,7 +13,7 @@ endif
 
 export IMG_TAG
 
-COVERAGE_EXCLUDE=mocks|vendor|test|docs|main.go|config.go|client.go
+COVERAGE_EXCLUDE=infrastructure|mocks|vendor|test|docs|main.go|config.go|client.go
 COVERAGE_THRESHOLD = 80
 COVERAGE_FOLDER=./coverage
 #=========================== DEV TOOLS =========================== 
@@ -98,3 +98,12 @@ clean:
 generate-rsa-key:
 	openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:2048
 	openssl rsa -pubout -in private_key.pem -out public_key.pem
+
+#=========================== DB MIGRATION ===========================
+.PHONY: new-schema
+new-schema:
+	migrate create -ext sql -dir ./migrations -seq $(name)
+# example: make new-schema name=add_bookmark
+
+migrate:
+	go run ./cmd/migrate/main.go

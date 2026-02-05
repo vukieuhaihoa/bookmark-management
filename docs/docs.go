@@ -29,7 +29,248 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.healthCheckResponse"
+                            "$ref": "#/definitions/healthcheck.healthCheckResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/bookmarks": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a list of bookmarks for the authenticated user with pagination and sorting",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "List bookmarks",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "example": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 5,
+                        "example": 5,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "-created_at",
+                        "example": "-created_at,description",
+                        "description": "Sorting criteria(",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bookmark.ListBookmarksResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new bookmark for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Create a new bookmark",
+                "parameters": [
+                    {
+                        "description": "Create Bookmark Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bookmark.createBookmarkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/bookmark.createBookmarkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/bookmarks/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update bookmark by ID for authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Update bookmark by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bookmark ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Bookmark update info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bookmark.updateBookmarkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete bookmark by ID for authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Delete bookmark by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bookmark ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Message"
                         }
                     }
                 }
@@ -87,19 +328,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.shortenURLResponse"
+                            "$ref": "#/definitions/link.shortenURLResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handler.shortenURLResponse"
+                            "$ref": "#/definitions/link.shortenURLResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/handler.shortenURLResponse"
+                            "$ref": "#/definitions/link.shortenURLResponse"
                         }
                     }
                 }
@@ -125,7 +366,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.shortenURLRequest"
+                            "$ref": "#/definitions/link.shortenURLRequest"
                         }
                     }
                 ],
@@ -133,19 +374,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.shortenURLResponse"
+                            "$ref": "#/definitions/link.shortenURLResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handler.shortenURLResponse"
+                            "$ref": "#/definitions/link.shortenURLResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/handler.shortenURLResponse"
+                            "$ref": "#/definitions/link.shortenURLResponse"
                         }
                     }
                 }
@@ -170,7 +411,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.createUserResponse"
+                            "$ref": "#/definitions/user.createUserResponse"
                         }
                     },
                     "401": {
@@ -211,7 +452,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.updateProfileRequest"
+                            "$ref": "#/definitions/user.updateProfileRequest"
                         }
                     }
                 ],
@@ -263,7 +504,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.loginRequest"
+                            "$ref": "#/definitions/user.loginRequest"
                         }
                     }
                 ],
@@ -271,7 +512,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.loginResponse"
+                            "$ref": "#/definitions/user.loginResponse"
                         }
                     },
                     "400": {
@@ -315,7 +556,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.createUserRequest"
+                            "$ref": "#/definitions/user.createUserRequest"
                         }
                     }
                 ],
@@ -323,7 +564,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/handler.createUserResponse"
+                            "$ref": "#/definitions/user.createUserResponse"
                         }
                     },
                     "400": {
@@ -343,46 +584,78 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handler.createUserRequest": {
-            "type": "object",
-            "required": [
-                "display_name",
-                "email",
-                "password",
-                "username"
-            ],
-            "properties": {
-                "display_name": {
-                    "type": "string",
-                    "example": "Test User"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "testuser001@example.com"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 8,
-                    "example": "my_SECURE_password123@"
-                },
-                "username": {
-                    "type": "string",
-                    "example": "testuser001"
-                }
-            }
-        },
-        "handler.createUserResponse": {
+        "bookmark.ListBookmarksResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/model.User"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Bookmark"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/common.Paging"
+                }
+            }
+        },
+        "bookmark.createBookmarkRequest": {
+            "type": "object",
+            "required": [
+                "description",
+                "url"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "A sample bookmark"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://example.com"
+                }
+            }
+        },
+        "bookmark.createBookmarkResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.Bookmark"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "handler.healthCheckResponse": {
+        "bookmark.updateBookmarkRequest": {
+            "type": "object",
+            "required": [
+                "description",
+                "url"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "common.Paging": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "healthcheck.healthCheckResponse": {
             "type": "object",
             "properties": {
                 "instance_id": {
@@ -396,36 +669,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.loginRequest": {
-            "type": "object",
-            "required": [
-                "password",
-                "username"
-            ],
-            "properties": {
-                "password": {
-                    "type": "string",
-                    "minLength": 8,
-                    "example": "my_SECURE_password123@"
-                },
-                "username": {
-                    "type": "string",
-                    "example": "testuser001"
-                }
-            }
-        },
-        "handler.loginResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.shortenURLRequest": {
+        "link.shortenURLRequest": {
             "type": "object",
             "required": [
                 "exp",
@@ -441,7 +685,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.shortenURLResponse": {
+        "link.shortenURLResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -452,20 +696,26 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.updateProfileRequest": {
+        "model.Bookmark": {
             "type": "object",
-            "required": [
-                "display_name",
-                "email"
-            ],
             "properties": {
-                "display_name": {
-                    "type": "string",
-                    "example": "Updated User 001"
+                "code": {
+                    "type": "string"
                 },
-                "email": {
-                    "type": "string",
-                    "example": "updatedtestuser001@example.com"
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },
@@ -498,6 +748,91 @@ const docTemplate = `{
                 "details": {},
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "user.createUserRequest": {
+            "type": "object",
+            "required": [
+                "display_name",
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "display_name": {
+                    "type": "string",
+                    "example": "Test User"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "testuser001@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "my_SECURE_password123@"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "testuser001"
+                }
+            }
+        },
+        "user.createUserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.User"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.loginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "my_SECURE_password123@"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "testuser001"
+                }
+            }
+        },
+        "user.loginResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.updateProfileRequest": {
+            "type": "object",
+            "required": [
+                "display_name",
+                "email"
+            ],
+            "properties": {
+                "display_name": {
+                    "type": "string",
+                    "example": "Updated User 001"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "updatedtestuser001@example.com"
                 }
             }
         }

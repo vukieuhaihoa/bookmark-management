@@ -12,10 +12,11 @@ type Message struct {
 }
 
 var (
-	InternalErrorResponse = Message{Message: "Internal server error"}
-	InputErrorResponse    = Message{Message: "Invalid input"}
-	InvalidTokenResponse  = Message{Message: "Invalid token"}
-	UnauthorizedResponse  = Message{Message: "Unauthorized"}
+	InternalErrorResponse      = Message{Message: "Internal server error"}
+	InputErrorResponse         = Message{Message: "Invalid input"}
+	InvalidTokenResponse       = Message{Message: "Invalid token"}
+	UnauthorizedResponse       = Message{Message: "Unauthorized"}
+	InvalidSortedFieldResponse = Message{Message: "Invalid sorted field"}
 )
 
 // InputFieldError processes an error and returns a structured Message response.

@@ -3,19 +3,21 @@ package dbutils
 import (
 	"errors"
 	"strings"
-
-	"gorm.io/gorm"
 )
 
 // errorFilter is a list of functions that filter and categorize database errors.
 var errorFilter = []func(err error) (bool, error){
 	filterDuplicationError,
 	filterRecordNotFoundError,
+	filterForeignKeyError,
+	filterInvalidSortFieldError,
 }
 
 var (
 	ErrDuplicationType    = errors.New("duplication type error")
 	ErrRecordNotFoundType = errors.New("not found type error")
+	ErrForeignKeyType     = errors.New("foreign key constraint error")
+	ErrInvalidSortField   = errors.New("invalid sort field error")
 )
 
 // CatchDBError inspects the provided error and categorizes it into predefined error types.
@@ -48,5 +50,13 @@ func filterDuplicationError(err error) (bool, error) {
 
 // filterRecordNotFoundError checks if the error is a record not found error.
 func filterRecordNotFoundError(err error) (bool, error) {
-	return errors.Is(err, gorm.ErrRecordNotFound), ErrRecordNotFoundType
+	return strings.Contains(strings.ToLower(err.Error()), "record not found"), ErrRecordNotFoundType
+}
+
+func filterForeignKeyError(err error) (bool, error) {
+	return strings.Contains(strings.ToLower(err.Error()), "foreign key constraint"), ErrForeignKeyType
+}
+
+func filterInvalidSortFieldError(err error) (bool, error) {
+	return strings.Contains(strings.ToLower(err.Error()), "no such colum"), ErrInvalidSortField
 }
