@@ -5,11 +5,11 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/pkg/jwtutils"
 )
 
-// CreatJWTProviders initializes and returns JWT generator and validator.
+// CreateJWTProviders initializes and returns JWT generator and validator.
 // Returns:
 //   - jwtutils.JWTGenerator: The initialized JWT generator
 //   - jwtutils.JWTValidator: The initialized JWT validator
-func CreatJWTProviders() (jwtutils.JWTGenerator, jwtutils.JWTValidator) {
+func CreateJWTProviders() (jwtutils.JWTGenerator, jwtutils.JWTValidator) {
 	jwtGenerator, err := jwtutils.NewJWTGenerator("./private_key.pem")
 	common.HandlerError(err)
 

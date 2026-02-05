@@ -15,18 +15,18 @@ import (
 )
 
 // allowedSortFields maps the allowed sorting fields from query parameters to database column names.
-var allowedSortFields = map[string]string{
-	"createdAt":   "created_at",
-	"updatedAt":   "updated_at",
-	"url":         "url",
-	"description": "description",
+var allowedSortFields = map[string]bool{
+	"created_at":  true,
+	"updated_at":  true,
+	"url":         true,
+	"description": true,
 }
 
 // PagingRequest represents the expected query parameters for pagination and sorting when listing bookmarks.
 type PagingRequest struct {
 	Page  int    `form:"page" binding:"gte=1" default:"1" example:"1"`
-	Limit int    `form:"limit" binding:"gte=1,lte=20" default:"5" example:"5"`
-	Sort  string `form:"sort" example:"-createdAt,updatedAt" default:"-createdAt"`
+	Limit int    `form:"limit" binding:"gte=1,lte=50" default:"5" example:"5"`
+	Sort  string `form:"sort" example:"-created_at,updated_at" default:"-created_at"`
 }
 
 // ListBookmarksResponse represents the response returned when listing bookmarks.
@@ -43,7 +43,7 @@ type ListBookmarksResponse struct {
 // @Produce      json
 // @Param        page   query     int    false  "Page number"        default(1)    example(1)
 // @Param        limit  query     int    false  "Number of items per page"  default(5)    example(5)
-// @Param        sort   query     string false  "Sorting criteria("-" for descending), e.g., -createdAt,updatedAt"  default(-createdAt)  example(-createdAt,description)
+// @Param        sort   query     string false  "Sorting criteria("-" for descending), e.g., -created_at,updated_at"  default(-created_at)  example(-created_at,description)
 // @Success      200    {object}  ListBookmarksResponse
 // @Failure      400    {object}  response.Message
 // @Failure      401    {object}  response.Message
@@ -69,15 +69,7 @@ func (b *bookmarkHandler) ListBookmarks(c *gin.Context) {
 		return
 	}
 
-	queryOptions := &common.QueryOptions{
-		Paging: common.Paging{
-			Page:  input.Page,
-			Limit: input.Limit,
-		},
-		Sorting: parsedSortFields,
-	}
-	// preprocess paging parameters
-	queryOptions.Process()
+	queryOptions := common.NewQueryOptions(input.Page, input.Limit, parsedSortFields)
 
 	res, err := b.svc.ListBookmarks(c, userID, queryOptions)
 	switch {

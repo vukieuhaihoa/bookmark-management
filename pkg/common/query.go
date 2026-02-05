@@ -36,22 +36,22 @@ type SortedField struct {
 //
 // Example:
 //
-//	allowed := map[string]string{
-//	    "createdAt": "created_at",
-//	    "updatedAt": "updated_at",
+//	allowed := map[string]bool{
+//	    "created_at": true,
+//	    "updated_at": true,
 //	}
-//	sort := "-createdAt,updatedAt"
+//	sort := "-created_at,updated_at"
 //	parsed, err := ParseSortParams(sort, allowed)
 //	// parsed will contain:
 //	// []SortedField{
 //	//     {Field: "created_at", Direction: SortDesc},
 //	//     {Field: "updated_at", Direction: SortAsc},
 //	// }
-func ParseSortParams(sort string, allowed map[string]string) ([]SortedField, error) {
+func ParseSortParams(sort string, allowed map[string]bool) ([]SortedField, error) {
 	if sort == "" {
 		return []SortedField{
 			{
-				Field: allowed["createdAt"], Direction: SortDesc,
+				Field: "created_at", Direction: SortDesc,
 			},
 		}, nil
 	}
@@ -68,13 +68,13 @@ func ParseSortParams(sort string, allowed map[string]string) ([]SortedField, err
 			field = strings.TrimPrefix(part, "-")
 		}
 
-		mappedField, ok := allowed[field]
-		if !ok {
+		isAllowed, ok := allowed[field]
+		if !ok || !isAllowed {
 			return nil, ErrInvalidSortField
 		}
 
 		results = append(results, SortedField{
-			Field:     mappedField,
+			Field:     field,
 			Direction: direction,
 		})
 	}
@@ -103,8 +103,8 @@ func (p *Paging) Process() {
 		p.Limit = 1
 	}
 
-	if p.Limit >= 20 {
-		p.Limit = 20
+	if p.Limit >= 50 {
+		p.Limit = 50
 	}
 
 }
@@ -113,4 +113,25 @@ func (p *Paging) Process() {
 type QueryOptions struct {
 	Sorting []SortedField
 	Paging
+}
+
+// NewQueryOptions creates a new instance of QueryOptions with the provided paging and sorting parameters.
+//
+// Parameters:
+//   - page: The page number for pagination.
+//   - limit: The number of items per page for pagination.
+//   - sorting: A slice of SortedField structures representing the sorting criteria.
+//
+// Returns:
+//   - *QueryOptions: A pointer to the newly created QueryOptions instance with processed paging parameters.
+func NewQueryOptions(page, limit int, sorting []SortedField) *QueryOptions {
+	res := &QueryOptions{
+		Sorting: sorting,
+		Paging: Paging{
+			Page:  page,
+			Limit: limit,
+		},
+	}
+	res.Process()
+	return res
 }

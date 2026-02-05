@@ -69,8 +69,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "default": "-createdAt",
-                        "example": "-createdAt,description",
+                        "default": "-created_at",
+                        "example": "-created_at,description",
                         "description": "Sorting criteria(",
                         "name": "sort",
                         "in": "query"

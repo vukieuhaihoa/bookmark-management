@@ -47,7 +47,7 @@ func TestHandler_ListBookmarks(t *testing.T) {
 			name: "successful list bookmarks",
 
 			setupMockRequest: func(ctx *gin.Context) {
-				ctx.Request = httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-createdAt", nil)
+				ctx.Request = httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-created_at", nil)
 				ctx.Request.Header.Set("Content-Type", "application/json")
 				// Simulate authenticated user
 				ctx.Set("claims", jwt.MapClaims{"sub": "de305d54-75b4-431b-adb2-eb6b9e546099"})
@@ -110,7 +110,7 @@ func TestHandler_ListBookmarks(t *testing.T) {
 			name: "service error",
 
 			setupMockRequest: func(ctx *gin.Context) {
-				ctx.Request = httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-createdAt", nil)
+				ctx.Request = httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-created_at", nil)
 				ctx.Request.Header.Set("Content-Type", "application/json")
 				// Simulate authenticated user
 				ctx.Set("claims", jwt.MapClaims{"sub": "de305d54-75b4-431b-adb2-eb6b9e546099"})
@@ -128,7 +128,7 @@ func TestHandler_ListBookmarks(t *testing.T) {
 		{
 			name: "unauthorized user",
 			setupMockRequest: func(ctx *gin.Context) {
-				ctx.Request = httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-createdAt", nil)
+				ctx.Request = httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-created_at", nil)
 				ctx.Request.Header.Set("Content-Type", "application/json")
 				// No authenticated user set
 			},
@@ -144,7 +144,7 @@ func TestHandler_ListBookmarks(t *testing.T) {
 		{
 			name: "invalid paging parameters",
 			setupMockRequest: func(ctx *gin.Context) {
-				ctx.Request = httptest.NewRequest("GET", "/v1/bookmarks?page=0&limit=50&sort=-createdAt", nil)
+				ctx.Request = httptest.NewRequest("GET", "/v1/bookmarks?page=0&limit=60&sort=-created_at", nil)
 				ctx.Request.Header.Set("Content-Type", "application/json")
 				// Simulate authenticated user
 				ctx.Set("claims", jwt.MapClaims{"sub": "de305d54-75b4-431b-adb2-eb6b9e546099"})
@@ -180,7 +180,7 @@ func TestHandler_ListBookmarks(t *testing.T) {
 			handler.ListBookmarks(ctx)
 
 			// Assert response code
-			assert.Equal(t, tc.expectedCode, ctx.Writer.Status())
+			assert.Equal(t, tc.expectedCode, rec.Code)
 			// Assert response body
 			assert.Equal(t, tc.expectedResponse, strings.TrimSpace(rec.Body.String()))
 		})

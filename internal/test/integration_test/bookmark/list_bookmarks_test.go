@@ -31,7 +31,7 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 
 			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
 				// Setup HTTP request and recorder
-				req := httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-createdAt", nil)
+				req := httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-created_at", nil)
 				req.Header.Set("Authorization", "Bearer valid_jwt_token")
 				respRec := httptest.NewRecorder()
 				api.ServeHTTP(respRec, req)
@@ -94,7 +94,7 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 
 			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
 				// Setup HTTP request and recorder
-				req := httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-createdAt", nil)
+				req := httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-created_at", nil)
 				req.Header.Set("Authorization", "Bearer token_without_user_id")
 				respRec := httptest.NewRecorder()
 				api.ServeHTTP(respRec, req)

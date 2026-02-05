@@ -19,7 +19,7 @@ import (
 // @contact.url http://www.example.com/support
 // @contact.email vukieuhaihoa@gmail.com
 func main() {
-	app := infrastructure.CreatAPI()
+	app := infrastructure.CreateAPI()
 
 	app.Start()
 }

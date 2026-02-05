@@ -207,9 +207,9 @@ paths:
         in: query
         name: limit
         type: integer
-      - default: -createdAt
+      - default: -created_at
         description: Sorting criteria(
-        example: -createdAt,description
+        example: -created_at,description
         in: query
         name: sort
         type: string

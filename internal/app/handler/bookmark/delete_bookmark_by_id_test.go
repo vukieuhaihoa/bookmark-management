@@ -110,6 +110,41 @@ func TestHandler_DeleteBookmarkByID(t *testing.T) {
 			expectedStatusCode: http.StatusInternalServerError,
 			expectedResponse:   `{"message":"Internal server error"}`,
 		},
+		{
+			name: "Fail to delete bookmark by ID - unauthorized user",
+
+			setupMockRequest: func(c *gin.Context, id, userID string) {
+				c.Request = httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/v1/bookmarks/%s", id), nil)
+				c.Params = gin.Params{{Key: "id", Value: id}}
+				// No authenticated user set
+			},
+			setupMockBookmarkService: func(ctx context.Context, id, userID string) *mocks.Service {
+				repoMock := mocks.NewService(t)
+				return repoMock
+			},
+			inputBookmarkID:    "a1b2c3d4-e5f6-7890-abcd-ef0000000006",
+			inputUserID:        "",
+			expectedStatusCode: http.StatusUnauthorized,
+			expectedResponse:   `{"message":"Unauthorized"}`,
+		},
+		{
+			name: "Fail to delete bookmark by ID - missing bookmark ID",
+
+			setupMockRequest: func(c *gin.Context, id, userID string) {
+				c.Request = httptest.NewRequest(http.MethodDelete, "/v1/bookmarks/", nil)
+				// Missing bookmark ID in params
+				// Simulate authenticated user
+				c.Set("claims", jwt.MapClaims{"sub": userID})
+			},
+			setupMockBookmarkService: func(ctx context.Context, id, userID string) *mocks.Service {
+				repoMock := mocks.NewService(t)
+				return repoMock
+			},
+			inputBookmarkID:    "",
+			inputUserID:        "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   `{"message":"Bookmark ID is required"}`,
+		},
 	}
 
 	for _, tc := range testCases {

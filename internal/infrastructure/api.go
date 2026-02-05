@@ -26,7 +26,7 @@ func CreateAPIConfig() *api.Config {
 // It sets up all necessary dependencies including database connections, JWT providers, and other services.
 // Returns:
 //   - api.Engine: The initialized API engine.
-func CreatAPI() api.Engine {
+func CreateAPI() api.Engine {
 	logger.SetLogLevel()
 
 	// Initialize API configuration
@@ -39,7 +39,7 @@ func CreatAPI() api.Engine {
 	dbClient := CreateSQLDBAndMigration()
 
 	// initialize other dependencies
-	jwtGenerator, jwtValidator := CreatJWTProviders()
+	jwtGenerator, jwtValidator := CreateJWTProviders()
 	app := gin.New()
 
 	apiEngine := api.New(&api.EngineOpts{

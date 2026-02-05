@@ -8,16 +8,16 @@ import (
 
 func Test_ParseSortParams(t *testing.T) {
 
-	allowed := map[string]string{
-		"createdAt": "created_at",
-		"updatedAt": "updated_at",
+	allowed := map[string]bool{
+		"created_at": true,
+		"updated_at": true,
 	}
 
 	tests := []struct {
 		name string
 
 		sort    string
-		allowed map[string]string
+		allowed map[string]bool
 		want    []SortedField
 		wantErr error
 	}{
@@ -32,7 +32,7 @@ func Test_ParseSortParams(t *testing.T) {
 		},
 		{
 			name:    "single ascending field",
-			sort:    "updatedAt",
+			sort:    "updated_at",
 			allowed: allowed,
 			want: []SortedField{
 				{Field: "updated_at", Direction: SortAsc},
@@ -41,7 +41,7 @@ func Test_ParseSortParams(t *testing.T) {
 		},
 		{
 			name:    "single descending field",
-			sort:    "-createdAt",
+			sort:    "-created_at",
 			allowed: allowed,
 			want: []SortedField{
 				{Field: "created_at", Direction: SortDesc},
@@ -50,7 +50,7 @@ func Test_ParseSortParams(t *testing.T) {
 		},
 		{
 			name:    "multiple fields",
-			sort:    "-createdAt,updatedAt",
+			sort:    "-created_at,updated_at",
 			allowed: allowed,
 			want: []SortedField{
 				{Field: "created_at", Direction: SortDesc},

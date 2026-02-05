@@ -12,6 +12,8 @@ var (
 	ErrEmptyID      = errors.New("empty id in token claims")
 )
 
+// GetJWTClaimsFromRequest extracts JWT claims from the Gin context.
+// It assumes that the claims have been set in the context by prior middleware.
 func GetJWTClaimsFromRequest(ctx *gin.Context) (jwt.MapClaims, error) {
 	claimsValue, _ := ctx.Get("claims")
 	claims, ok := claimsValue.(jwt.MapClaims)

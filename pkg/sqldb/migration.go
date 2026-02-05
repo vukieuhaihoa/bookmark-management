@@ -45,11 +45,11 @@ func migrateSchema(m *migrate.Migrate, mode string, steps int) error {
 		migrateErr = m.Up()
 	case "steps":
 		if steps == 0 {
-			return errors.New("[Database migration] Steps must not be 0. Please provide a valid number of steps to migrate/")
+			return errors.New("[Database migration] Steps must not be 0. Please provide a valid number of steps to migrate.")
 		}
 		migrateErr = m.Steps(steps)
 	default:
-		return errors.New("[Database migration] Invalid migration mode. Supported modes are: up, steps")
+		return errors.New("[Database migration] Invalid migration mode. Supported modes are: up, steps.")
 	}
 
 	if migrateErr != nil && !errors.Is(migrateErr, migrate.ErrNoChange) {

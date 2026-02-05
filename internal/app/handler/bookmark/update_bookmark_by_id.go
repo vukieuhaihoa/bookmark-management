@@ -36,6 +36,7 @@ func (b *bookmarkHandler) UpdateBookmarkByID(c *gin.Context) {
 	input := &updateBookmarkRequest{}
 	if err := c.ShouldBindJSON(input); err != nil {
 		c.JSON(http.StatusBadRequest, response.InputFieldError(err))
+		return
 	}
 
 	bookmarkID := c.Param("id")

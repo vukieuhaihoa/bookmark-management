@@ -150,11 +150,82 @@ func TestHandler_UpdateBookmarkByID(t *testing.T) {
 			expectedStatusCode: http.StatusInternalServerError,
 			expectedResponse:   "{\"message\":\"Internal server error\"}",
 		},
+		{
+			name: "Fail to update bookmark by ID - invalid input",
+
+			setupMockRequest: func(c *gin.Context, id, userID string, inputRequest *updateBookmarkRequest) {
+				reqBody, _ := json.Marshal(inputRequest)
+				c.Request = httptest.NewRequest(http.MethodPut, fmt.Sprintf("/v1/bookmarks/%s", id), strings.NewReader(string(reqBody)))
+				c.Request.Header.Set("Content-Type", "application/json")
+				c.Params = gin.Params{{Key: "id", Value: id}}
+				// Simulate authenticated user
+				c.Set("claims", jwt.MapClaims{"sub": userID})
+			},
+
+			setupMockBookmarkService: func(ctx context.Context, id, userID string, req *updateBookmarkRequest) *mocks.Service {
+				repoMock := mocks.NewService(t)
+				return repoMock
+			},
+			inputBookmarkID: "a1b2c3d4-e5f6-7890-abcd-ef0000000005",
+			inputUserID:     "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
+			inputRequest: &updateBookmarkRequest{
+				URL:         "invalid-url",
+				Description: "",
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   "{\"message\":\"Invalid input fields\",\"details\":[\"Description is invalid (required)\",\"URL is invalid (url)\"]}",
+		},
+		{
+			name: "Fail to update bookmark by ID - missing bookmark ID",
+
+			setupMockRequest: func(c *gin.Context, id, userID string, inputRequest *updateBookmarkRequest) {
+				reqBody, _ := json.Marshal(inputRequest)
+				c.Request = httptest.NewRequest(http.MethodPut, "/v1/bookmarks/", strings.NewReader(string(reqBody)))
+				c.Request.Header.Set("Content-Type", "application/json")
+				// Missing bookmark ID in params
+				// Simulate authenticated user
+				c.Set("claims", jwt.MapClaims{"sub": userID})
+			},
+
+			setupMockBookmarkService: func(ctx context.Context, id, userID string, req *updateBookmarkRequest) *mocks.Service {
+				repoMock := mocks.NewService(t)
+				return repoMock
+			},
+			inputBookmarkID: "",
+			inputUserID:     "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
+			inputRequest: &updateBookmarkRequest{
+				URL:         "https://example.com",
+				Description: "Valid description",
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   "{\"message\":\"Bookmark ID is required\"}",
+		},
+		{
+			name: "Fail to update bookmark by ID - unauthorized user",
+
+			setupMockRequest: func(c *gin.Context, id, userID string, inputRequest *updateBookmarkRequest) {
+				reqBody, _ := json.Marshal(inputRequest)
+				c.Request = httptest.NewRequest(http.MethodPut, fmt.Sprintf("/v1/bookmarks/%s", id), strings.NewReader(string(reqBody)))
+				c.Request.Header.Set("Content-Type", "application/json")
+				c.Params = gin.Params{{Key: "id", Value: id}}
+				// No authenticated user set
+			},
+			setupMockBookmarkService: func(ctx context.Context, id, userID string, req *updateBookmarkRequest) *mocks.Service {
+				repoMock := mocks.NewService(t)
+				return repoMock
+			},
+			inputBookmarkID: "a1b2c3d4-e5f6-7890-abcd-ef0000000005",
+			inputUserID:     "",
+			inputRequest: &updateBookmarkRequest{
+				URL:         "https://example.com",
+				Description: "Valid description",
+			},
+			expectedStatusCode: http.StatusUnauthorized,
+			expectedResponse:   "{\"message\":\"Unauthorized\"}",
+		},
 	}
 
 	for _, tc := range testCases {
-		tc := tc
-
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
