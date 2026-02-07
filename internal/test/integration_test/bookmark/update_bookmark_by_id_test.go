@@ -12,6 +12,7 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
 	"github.com/vukieuhaihoa/bookmark-management/internal/test/fixture"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/jwtutils/mocks"
+	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
 )
 
 func TestBookmarkEndPoint_UpdateBookmarkByID(t *testing.T) {
@@ -133,6 +134,7 @@ func TestBookmarkEndPoint_UpdateBookmarkByID(t *testing.T) {
 					ServiceName: "bookmark_service",
 					InstanceID:  "bookmark_service_instance_01",
 				},
+				RedisClient:  redisPkg.InitMockRedis(t),
 				SqlDB:        db,
 				JWTValidator: jwtValidator,
 			})

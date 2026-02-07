@@ -12,6 +12,7 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
 	"github.com/vukieuhaihoa/bookmark-management/internal/test/fixture"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/jwtutils/mocks"
+	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 )
 
@@ -126,7 +127,7 @@ func TestBookmarkEndpoint_CreateBookmark(t *testing.T) {
 					ServiceName: "bookmark_service",
 					InstanceID:  "test_instance_id_1",
 				},
-				RedisClient:     nil,
+				RedisClient:     redisPkg.InitMockRedis(t),
 				SqlDB:           db,
 				RandomCodeGen:   utils.NewCodeGenerator(),
 				PasswordHashing: nil,

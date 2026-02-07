@@ -57,6 +57,17 @@ type Repository interface {
 	// Returns:
 	//   - error: An error if the deletion fails, otherwise nil.
 	DeleteBookmarkByID(ctx context.Context, id, userID string) error
+
+	// GetBookmarkByCode retrieves a bookmark from the database by its unique code.
+	//
+	// Parameters:
+	//   - ctx: The context for managing request-scoped values and cancellation.
+	//   - code: The unique code of the bookmark.
+	//
+	// Returns:
+	//   - *model.Bookmark: The bookmark model if found.
+	//   - error: An error if the retrieval fails or the bookmark is not found.
+	GetBookmarkByCode(ctx context.Context, code string) (*model.Bookmark, error)
 }
 
 // bookmarkRepository implements the Repository interface for bookmark data operations.

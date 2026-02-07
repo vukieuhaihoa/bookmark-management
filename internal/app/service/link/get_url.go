@@ -17,10 +17,20 @@ import (
 //   - string: The original URL associated with the shortened code
 //   - error: An error object if the retrieval operation fails, otherwise nil
 func (s *linkService) GetURL(ctx context.Context, urlCode string) (string, error) {
-	url, err := s.repo.GetURL(ctx, urlCode)
-	if errors.Is(err, redis.Nil) {
-		return "", ErrCodeNotFound
+	// Determine if the URL code corresponds to a Redis-stored link or a bookmark
+	if len(urlCode) == defaultURLCodeLength {
+		url, err := s.repo.GetURL(ctx, urlCode)
+		if errors.Is(err, redis.Nil) {
+			return "", ErrCodeNotFound
+		}
+
+		return url, err
 	}
 
-	return url, err
+	bookmark, err := s.bookmarkRepo.GetBookmarkByCode(ctx, urlCode)
+	if err != nil {
+		return "", err
+	}
+
+	return bookmark.URL, nil
 }

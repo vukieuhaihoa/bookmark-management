@@ -183,7 +183,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			mockRandomCodeGen := tc.setupMockRandomCodeGen()
 			mockRepo := tc.setupMockRepo(t.Context())
-			testSvc := NewLinkService(mockRepo, mockRandomCodeGen)
+			testSvc := NewLinkService(mockRepo, mockRandomCodeGen, nil)
 
 			code, err := testSvc.ShortenURL(t.Context(), tc.inputOriginalURL, tc.inputExpireIn)
 			assert.Equal(t, tc.expectedError, err)
