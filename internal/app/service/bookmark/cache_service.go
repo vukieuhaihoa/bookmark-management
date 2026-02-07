@@ -17,6 +17,14 @@ type bookmarkServiceWithCache struct {
 	cache cache.DB
 }
 
+// NewBookmarkServiceWithCache creates a new bookmark service with caching capabilities.
+//
+// Parameters:
+//   - svc: The underlying bookmark service to be wrapped.
+//   - cache: The cache database interface for caching operations.
+//
+// Returns:
+//   - Service: An instance of the bookmark service with caching.
 func NewBookmarkServiceWithCache(svc Service, cache cache.DB) Service {
 	return &bookmarkServiceWithCache{
 		svc:   svc,
