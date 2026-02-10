@@ -9,6 +9,6 @@ type Bookmark struct {
 	Code               string `gorm:"unique;not null;column:code" json:"code"`
 	UserID             string `gorm:"not null;column:user_id" json:"-"`
 	User               User   `gorm:"foreignKey:UserID;references:ID" json:"-"`
-	CodeShorten        int64  `gorm:"not null;column:code_shorten;" json:"-"`
-	CodeShortenEncoded string `gorm:"not null;column:code_shorten_encoded" json:"code_shorten_encoded"`
+	CodeShorten        int64  `gorm:"column:code_shorten;autoIncrement" json:"-"`
+	CodeShortenEncoded string `gorm:"column:code_shorten_encoded" json:"code_shorten_encoded"`
 }

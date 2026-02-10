@@ -23,7 +23,12 @@ import (
 func (r *bookmarkRepository) CreateBookmark(ctx context.Context, bookmark *model.Bookmark) (*model.Bookmark, error) {
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		if err := r.db.WithContext(ctx).Create(bookmark).Error; err != nil {
+		if err := tx.Omit("CodeShorten").Create(bookmark).Error; err != nil {
+			return err
+		}
+
+		// Reload code_shorten assigned by BIGSERIAL
+		if err := tx.Model(&model.Bookmark{}).Where("id = ?", bookmark.ID).Pluck("code_shorten", &bookmark.CodeShorten).Error; err != nil {
 			return err
 		}
 
@@ -32,9 +37,9 @@ func (r *bookmarkRepository) CreateBookmark(ctx context.Context, bookmark *model
 			return err
 		}
 
-		bookmark.CodeShortenEncoded = "p" + encoded
+		bookmark.CodeShortenEncoded = "p_" + encoded
 
-		if err := r.db.WithContext(ctx).Model(&model.Bookmark{}).Where("id = ?", bookmark.ID).Update("code_shorten_encoded", bookmark.CodeShortenEncoded).Error; err != nil {
+		if err := tx.Model(&model.Bookmark{}).Where("id = ?", bookmark.ID).Update("code_shorten_encoded", bookmark.CodeShortenEncoded).Error; err != nil {
 			return err
 		}
 
