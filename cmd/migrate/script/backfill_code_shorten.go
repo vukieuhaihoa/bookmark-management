@@ -16,7 +16,22 @@ func (bookmark) TableName() string {
 	return "bookmarks"
 }
 
+type schema_migrations struct {
+	Version int64 `gorm:"column:version"`
+}
+
+func (schema_migrations) TableName() string {
+	return "schema_migrations"
+}
+
 func BackfillForCodeShortenCol(db *gorm.DB) error {
+	sm := &schema_migrations{}
+	err := db.Model(&schema_migrations{}).Where("version = ?", 3).First(sm).Error
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to verify migration version for backfilling code_shorten column.")
+		return err
+	}
+
 	log.Info().Msg("Starting backfill for code_shorten column in bookmarks table.")
 	var bookmarks []bookmark
 	if err := db.Model(&bookmark{}).Find(&bookmarks).Error; err != nil {
@@ -29,7 +44,7 @@ func BackfillForCodeShortenCol(db *gorm.DB) error {
 		return nil
 	}
 
-	err := db.Transaction(func(tx *gorm.DB) error {
+	err = db.Transaction(func(tx *gorm.DB) error {
 		for i, bm := range bookmarks {
 			seq := int64(i + 1)
 			encoded, err := encoding.StdEncoding.EncodeInt64ToString(seq)
@@ -41,12 +56,12 @@ func BackfillForCodeShortenCol(db *gorm.DB) error {
 				Where("id = ?", bm.ID).
 				Updates(map[string]interface{}{
 					"code_shorten":         seq,
-					"code_shorten_encoded": encoded,
+					"code_shorten_encoded": "p_" + encoded,
 				}).Error; err != nil {
 				return fmt.Errorf("failed to update bookmark %s: %w", bm.ID, err)
 			}
 
-			fmt.Printf("updated %s: code_shorten=%d, code_shorten_encoded=%s\n", bm.ID, seq, encoded)
+			fmt.Printf("updated %s: code_shorten=%d, code_shorten_encoded=%s\n", bm.ID, seq, "p_"+encoded)
 		}
 
 		// Sync sequence so next auto-increment continues after max

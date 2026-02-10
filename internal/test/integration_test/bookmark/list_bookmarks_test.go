@@ -46,7 +46,7 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 			},
 
 			expectedStatusCode: http.StatusOK,
-			expectedResponse:   "{\"data\":[{\"id\":\"a1b2c3d4-e5f6-7890-abcd-ef0000000009\",\"created_at\":\"2023-01-01T05:00:00Z\",\"updated_at\":\"2023-01-01T05:00:00Z\",\"description\":\"Redis data types documentation\",\"url\":\"https://redis.io/docs/manual/data-types/\",\"code\":\"XXXX000006\"},{\"id\":\"a1b2c3d4-e5f6-7890-abcd-ef0000000008\",\"created_at\":\"2023-01-01T04:00:00Z\",\"updated_at\":\"2023-01-01T04:00:00Z\",\"description\":\"Learn PostgreSQL indexing basics\",\"url\":\"https://db-tutorials.dev/postgresql-indexing\",\"code\":\"XXXX000005\"}],\"pagination\":{\"page\":1,\"limit\":2,\"total\":6}}",
+			expectedResponse:   `{"data":[{"id":"a1b2c3d4-e5f6-7890-abcd-ef0000000009","created_at":"2023-01-01T05:00:00Z","updated_at":"2023-01-01T05:00:00Z","description":"Redis data types documentation","url":"https://redis.io/docs/manual/data-types/","code":"XXXX000006","code_shorten_encoded":"p_9"},{"id":"a1b2c3d4-e5f6-7890-abcd-ef0000000008","created_at":"2023-01-01T04:00:00Z","updated_at":"2023-01-01T04:00:00Z","description":"Learn PostgreSQL indexing basics","url":"https://db-tutorials.dev/postgresql-indexing","code":"XXXX000005","code_shorten_encoded":"p_8"}],"pagination":{"page":1,"limit":2,"total":6}}`,
 		},
 		{
 			name: "invalid query parameters",

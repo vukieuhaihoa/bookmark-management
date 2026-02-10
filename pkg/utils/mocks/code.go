@@ -9,9 +9,9 @@ type CodeGenerator struct {
 	mock.Mock
 }
 
-// GenerateCode provides a mock function with given fields: length
-func (_m *CodeGenerator) GenerateCode(length int) (string, error) {
-	ret := _m.Called(length)
+// GenerateCode provides a mock function with given fields: prefix, length
+func (_m *CodeGenerator) GenerateCode(prefix string, length int) (string, error) {
+	ret := _m.Called(prefix, length)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GenerateCode")
@@ -19,17 +19,17 @@ func (_m *CodeGenerator) GenerateCode(length int) (string, error) {
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int) (string, error)); ok {
-		return rf(length)
+	if rf, ok := ret.Get(0).(func(string, int) (string, error)); ok {
+		return rf(prefix, length)
 	}
-	if rf, ok := ret.Get(0).(func(int) string); ok {
-		r0 = rf(length)
+	if rf, ok := ret.Get(0).(func(string, int) string); ok {
+		r0 = rf(prefix, length)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(length)
+	if rf, ok := ret.Get(1).(func(string, int) error); ok {
+		r1 = rf(prefix, length)
 	} else {
 		r1 = ret.Error(1)
 	}

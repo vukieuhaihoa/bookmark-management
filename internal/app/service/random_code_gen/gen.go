@@ -8,5 +8,5 @@ package random_code_gen
 //   - string: The generated password
 //   - error: An error if random number generation fails, nil otherwise
 func (s *passwordService) GeneratePassword() (string, error) {
-	return s.randomCodeGen.GenerateCode(defaultPassLength)
+	return s.randomCodeGen.GenerateCode("", defaultPassLength)
 }

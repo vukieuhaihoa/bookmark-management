@@ -30,6 +30,20 @@ ARG _outputdir="/tmp/coverage"
 COPY --from=test-exec ${_outputdir}/coverage.out /
 COPY --from=test-exec ${_outputdir}/coverage.html /
 
+FROM base AS build_migrate
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -tags musl -ldflags="-w -s" \
+    -o migrate_script_for_v3 cmd/migrate/main.go
+
+FROM alpine AS migrate
+
+WORKDIR /app
+
+COPY --from=build_migrate /opt/app/migrate_script_for_v3 /app/migrate_script_for_v3
+
+CMD ["/app/migrate_script_for_v3"]
+
 FROM alpine AS final
 
 ARG app_name=app
@@ -39,6 +53,7 @@ WORKDIR /app
 
 COPY --from=build /opt/app/bookmark_service /app/bookmark_service
 COPY --from=build /opt/app/docs /app/docs
+COPY --from=build /opt/app/migrations /app/migrations
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 

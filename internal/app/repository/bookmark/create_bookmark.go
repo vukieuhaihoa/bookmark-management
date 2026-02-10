@@ -5,6 +5,8 @@ import (
 
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/encoding"
+	"gorm.io/gorm"
 )
 
 // CreateBookmark creates a new bookmark in the database.
@@ -19,8 +21,29 @@ import (
 //   - *model.Bookmark: The created bookmark model.
 //   - error: An error if the creation fails, otherwise nil.
 func (r *bookmarkRepository) CreateBookmark(ctx context.Context, bookmark *model.Bookmark) (*model.Bookmark, error) {
-	if err := r.db.WithContext(ctx).Create(bookmark).Error; err != nil {
+
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := r.db.WithContext(ctx).Create(bookmark).Error; err != nil {
+			return err
+		}
+
+		encoded, err := encoding.StdEncoding.EncodeInt64ToString(bookmark.CodeShorten)
+		if err != nil {
+			return err
+		}
+
+		bookmark.CodeShortenEncoded = "p" + encoded
+
+		if err := r.db.WithContext(ctx).Model(&model.Bookmark{}).Where("id = ?", bookmark.ID).Update("code_shorten_encoded", bookmark.CodeShortenEncoded).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
 		return nil, dbutils.CatchDBError(err)
 	}
+
 	return bookmark, nil
 }

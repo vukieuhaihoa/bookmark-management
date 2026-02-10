@@ -132,4 +132,7 @@ func helperCompareBookmarks(t *testing.T, db *gorm.DB, actual *model.Bookmark) {
 	assert.Equal(t, expected.Code, actual.Code)
 	assert.Equal(t, expected.Description, actual.Description)
 
+	assert.Equal(t, expected.CodeShorten, actual.CodeShorten)
+	assert.Equal(t, expected.CodeShortenEncoded, actual.CodeShortenEncoded)
+
 }

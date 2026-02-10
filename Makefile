@@ -62,8 +62,14 @@ redis-monitor:
 docker-build:
 	docker build -t $(IMG_NAME):$(IMG_TAG) .
 
+docker-build-migrate:
+	docker build --target migrate -t $(IMG_NAME)_migrate:$(IMG_TAG) .
+
 docker-release: docker-build
 	docker push $(IMG_NAME):$(IMG_TAG)
+
+docker-release-migrate: docker-build-migrate
+	docker push $(IMG_NAME)_migrate:$(IMG_TAG)
 
 docker-up:
 	docker-compose up -d

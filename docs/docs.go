@@ -716,6 +716,9 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
+                "code_shorten_encoded": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },

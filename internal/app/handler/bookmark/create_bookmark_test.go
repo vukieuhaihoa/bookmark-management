@@ -16,10 +16,6 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
 )
 
-var jwtClaims = jwt.MapClaims{
-	"sub": "user-123",
-}
-
 func TestHandler_CreateBookmark(t *testing.T) {
 	t.Parallel()
 
@@ -48,7 +44,9 @@ func TestHandler_CreateBookmark(t *testing.T) {
 				ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/bookmarks", strings.NewReader(string(reqBody)))
 				ctx.Request.Header.Set("Content-Type", "application/json")
 				// Simulate authenticated user
-				ctx.Set("claims", jwtClaims)
+				ctx.Set("claims", jwt.MapClaims{
+					"sub": "user-123",
+				})
 			},
 
 			setupMockSvc: func(ctx *gin.Context, inputRequest *createBookmarkRequest) *svcMocks.Service {
@@ -58,16 +56,17 @@ func TestHandler_CreateBookmark(t *testing.T) {
 						Base: model.Base{
 							ID: "bookmark-456",
 						},
-						URL:         inputRequest.URL,
-						Description: inputRequest.Description,
-						UserID:      "user-123",
-						Code:        "abcdefghij",
+						URL:                inputRequest.URL,
+						Description:        inputRequest.Description,
+						UserID:             "user-123",
+						Code:               "abcdefghij",
+						CodeShortenEncoded: "p_0",
 					}, nil)
 				return svcMock
 			},
 
 			expectedCode:     http.StatusCreated,
-			expectedResponse: `{"data":{"id":"bookmark-456","created_at":"0001-01-01T00:00:00Z","updated_at":"0001-01-01T00:00:00Z","description":"Example Website","url":"https://example.com","code":"abcdefghij"},"message":"Create a bookmark successfully!"}`,
+			expectedResponse: `{"data":{"id":"bookmark-456","created_at":"0001-01-01T00:00:00Z","updated_at":"0001-01-01T00:00:00Z","description":"Example Website","url":"https://example.com","code":"abcdefghij","code_shorten_encoded":"p_0"},"message":"Create a bookmark successfully!"}`,
 		},
 		{
 			name: "unauthorized user",
@@ -104,7 +103,9 @@ func TestHandler_CreateBookmark(t *testing.T) {
 				ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/bookmarks", strings.NewReader(string(reqBody)))
 				ctx.Request.Header.Set("Content-Type", "application/json")
 				// Simulate authenticated user
-				ctx.Set("claims", jwtClaims)
+				ctx.Set("claims", jwt.MapClaims{
+					"sub": "user-123",
+				})
 			},
 			setupMockSvc: func(ctx *gin.Context, inputRequest *createBookmarkRequest) *svcMocks.Service {
 				svcMock := svcMocks.NewService(t)
@@ -129,7 +130,9 @@ func TestHandler_CreateBookmark(t *testing.T) {
 				ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/bookmarks", strings.NewReader(string(reqBody)))
 				ctx.Request.Header.Set("Content-Type", "application/json")
 				// Simulate authenticated user
-				ctx.Set("claims", jwtClaims)
+				ctx.Set("claims", jwt.MapClaims{
+					"sub": "user-123",
+				})
 			},
 
 			setupMockSvc: func(ctx *gin.Context, inputRequest *createBookmarkRequest) *svcMocks.Service {
@@ -152,7 +155,9 @@ func TestHandler_CreateBookmark(t *testing.T) {
 				ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/bookmarks", strings.NewReader(string(reqBody)))
 				ctx.Request.Header.Set("Content-Type", "application/json")
 				// Simulate authenticated user
-				ctx.Set("claims", jwtClaims)
+				ctx.Set("claims", jwt.MapClaims{
+					"sub": "user-123",
+				})
 			},
 
 			setupMockSvc: func(ctx *gin.Context, inputRequest *createBookmarkRequest) *svcMocks.Service {

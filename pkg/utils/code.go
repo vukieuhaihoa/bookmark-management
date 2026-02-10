@@ -17,12 +17,13 @@ type CodeGenerator interface {
 	// GenerateCode generates a random code of the specified length.
 	//
 	// Parameters:
+	//   - prefix: The prefix to prepend to the generated code
 	//   - length: The desired length of the generated code
 	//
 	// Returns:
 	//   - string: The generated code
 	//   - error: An error if random number generation fails, nil otherwise
-	GenerateCode(length int) (string, error)
+	GenerateCode(prefix string, length int) (string, error)
 }
 
 type randomCodeGenerator struct {
@@ -36,13 +37,18 @@ func NewCodeGenerator() CodeGenerator {
 // It uses a predefined character set consisting of alphanumeric characters (a-z, A-Z, 0-9).
 //
 // Parameters:
+//   - prefix: The prefix to prepend to the generated code
 //   - length: The desired length of the generated code
 //
 // Returns:
 //   - string: The generated code
 //   - error: An error if random number generation fails, nil otherwise
-func (r *randomCodeGenerator) GenerateCode(length int) (string, error) {
+func (r *randomCodeGenerator) GenerateCode(prefix string, length int) (string, error) {
 	var strBuilder bytes.Buffer
+	if prefix != "" {
+		strBuilder.WriteString(prefix)
+		strBuilder.WriteByte('_')
+	}
 
 	for i := 0; i < length; i++ {
 		randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))

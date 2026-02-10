@@ -94,9 +94,10 @@ func TestBookmarkServiceWithCache_ListBookmarks(t *testing.T) {
 							CreatedAt: fixture.TestTime,
 							UpdatedAt: fixture.TestTime,
 						},
-						URL:         "https://example.com/testuser001",
-						Code:        "XXXX000001",
-						Description: "Bookmark for Test User 1 - record 1",
+						URL:                "https://example.com/testuser001",
+						Code:               "XXXX000001",
+						Description:        "Bookmark for Test User 1 - record 1",
+						CodeShortenEncoded: "p_1",
 					},
 				}, nil)
 				return svcMock
@@ -107,7 +108,7 @@ func TestBookmarkServiceWithCache_ListBookmarks(t *testing.T) {
 				groupKey := fmt.Sprintf(bookmark.ListBookmarksCacheGroupKey, userID)
 				cacheKey := bookmark.GenerateCacheKeyFromQueryOptions(opts)
 				cacheMock.On("GetCacheData", ctx, groupKey, cacheKey).Return([]byte{}, redis.Nil)
-				cacheMock.On("SetCacheData", ctx, groupKey, cacheKey, []byte(`{"bookmarks":[{"id":"a1b2c3d4-e5f6-7890-abcd-ef0000000001","created_at":"2023-01-01T00:00:00Z","updated_at":"2023-01-01T00:00:00Z","description":"Bookmark for Test User 1 - record 1","url":"https://example.com/testuser001","code":"XXXX000001"}],"total":1}`), bookmark.ListBookmarksCacheTTL).Return(nil)
+				cacheMock.On("SetCacheData", ctx, groupKey, cacheKey, []byte(`{"bookmarks":[{"id":"a1b2c3d4-e5f6-7890-abcd-ef0000000001","created_at":"2023-01-01T00:00:00Z","updated_at":"2023-01-01T00:00:00Z","description":"Bookmark for Test User 1 - record 1","url":"https://example.com/testuser001","code":"XXXX000001","code_shorten_encoded":"p_1"}],"total":1}`), bookmark.ListBookmarksCacheTTL).Return(nil)
 				return cacheMock
 			},
 
@@ -132,9 +133,10 @@ func TestBookmarkServiceWithCache_ListBookmarks(t *testing.T) {
 						CreatedAt: fixture.TestTime,
 						UpdatedAt: fixture.TestTime,
 					},
-					URL:         "https://example.com/testuser001",
-					Code:        "XXXX000001",
-					Description: "Bookmark for Test User 1 - record 1",
+					URL:                "https://example.com/testuser001",
+					Code:               "XXXX000001",
+					Description:        "Bookmark for Test User 1 - record 1",
+					CodeShortenEncoded: "p_1",
 				},
 			},
 			expectedTotal: 1,

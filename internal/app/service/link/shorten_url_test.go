@@ -30,7 +30,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
 				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", 8).Return("abcd1234", nil)
+				codeGenMock.On("GenerateCode", "r", 8).Return("abcd1234", nil)
 				return codeGenMock
 			},
 
@@ -52,7 +52,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
 				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", 8).Return("", assert.AnError)
+				codeGenMock.On("GenerateCode", "r", 8).Return("", assert.AnError)
 				return codeGenMock
 			},
 
@@ -71,7 +71,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
 				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", 8).Return("abcd1234", nil)
+				codeGenMock.On("GenerateCode", "r", 8).Return("abcd1234", nil)
 				return codeGenMock
 			},
 
@@ -93,8 +93,8 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
 				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", 8).Return("abcd1234", nil).Once()
-				codeGenMock.On("GenerateCode", 8).Return("efgh5678", nil).Once()
+				codeGenMock.On("GenerateCode", "r", 8).Return("abcd1234", nil).Once()
+				codeGenMock.On("GenerateCode", "r", 8).Return("efgh5678", nil).Once()
 				return codeGenMock
 			},
 
@@ -117,7 +117,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
 				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", 8).Return("abcd1234", nil)
+				codeGenMock.On("GenerateCode", "r", 8).Return("abcd1234", nil)
 				return codeGenMock
 			},
 
@@ -138,7 +138,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
 				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", 8).Return("abcd1234", nil)
+				codeGenMock.On("GenerateCode", "r", 8).Return("abcd1234", nil)
 				return codeGenMock
 			},
 
@@ -158,7 +158,7 @@ func TestService_ShortenURL(t *testing.T) {
 			name: "Fail to store URL after retries",
 			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
 				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", 8).Return("abcd1234", nil)
+				codeGenMock.On("GenerateCode", "r", 8).Return("abcd1234", nil)
 				return codeGenMock
 			},
 
