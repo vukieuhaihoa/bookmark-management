@@ -17,7 +17,7 @@ import (
 //   - *model.Bookmark: The created bookmark model.
 //   - error: An error if the creation fails, otherwise nil.
 func (s *bookmarkService) CreateBookmark(ctx context.Context, url, description, userID string) (*model.Bookmark, error) {
-	code, err := s.codeGen.GenerateCode(DEFAULT_CODE_LENGTH)
+	code, err := s.codeGen.GenerateCode("p", DEFAULT_CODE_LENGTH)
 	if err != nil {
 		return nil, err
 	}

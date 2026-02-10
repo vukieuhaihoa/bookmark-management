@@ -31,7 +31,7 @@ func TestService_CreateBookmark(t *testing.T) {
 
 			setupMockCodeGen: func(t *testing.T) *mockCodeGen.CodeGenerator {
 				codeGenMock := mockCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", DEFAULT_CODE_LENGTH).Return("abcdefghij", nil)
+				codeGenMock.On("GenerateCode", "p", DEFAULT_CODE_LENGTH).Return("abcdefghij", nil)
 				return codeGenMock
 			},
 
@@ -75,7 +75,7 @@ func TestService_CreateBookmark(t *testing.T) {
 
 			setupMockCodeGen: func(t *testing.T) *mockCodeGen.CodeGenerator {
 				codeGenMock := mockCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", DEFAULT_CODE_LENGTH).Return("", assert.AnError)
+				codeGenMock.On("GenerateCode", "p", DEFAULT_CODE_LENGTH).Return("", assert.AnError)
 				return codeGenMock
 			},
 
@@ -95,7 +95,7 @@ func TestService_CreateBookmark(t *testing.T) {
 
 			setupMockCodeGen: func(t *testing.T) *mockCodeGen.CodeGenerator {
 				codeGenMock := mockCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", DEFAULT_CODE_LENGTH).Return("abcdefghij", nil)
+				codeGenMock.On("GenerateCode", "p", DEFAULT_CODE_LENGTH).Return("abcdefghij", nil)
 				return codeGenMock
 			},
 

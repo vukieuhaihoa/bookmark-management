@@ -1,4 +1,4 @@
-package response
+package common
 
 import (
 	"errors"
@@ -42,4 +42,10 @@ func InputFieldError(err error) Message {
 		Message: "Invalid input fields",
 		Details: errs,
 	}
+}
+
+type SuccessResponse[Data any] struct {
+	Data       Data    `json:"data,omitempty"`
+	Message    string  `json:"message,omitempty"`
+	Pagination *Paging `json:"pagination,omitempty"`
 }

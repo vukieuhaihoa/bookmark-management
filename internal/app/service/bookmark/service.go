@@ -9,7 +9,7 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 )
 
-const DEFAULT_CODE_LENGTH = 10
+const DEFAULT_CODE_LENGTH = 8
 
 // Service defines the interface for bookmark-related business logic.
 //

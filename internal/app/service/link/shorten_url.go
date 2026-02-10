@@ -23,7 +23,7 @@ func (s *linkService) ShortenURL(ctx context.Context, originalURL string, expire
 	var err error
 
 	for attempt := 1; attempt <= maxRetryAttempts; attempt++ {
-		urlCode, err = s.randomCodeGen.GenerateCode(defaultURLCodeLength)
+		urlCode, err = s.randomCodeGen.GenerateCode("r", defaultURLCodeLength)
 		if err != nil {
 			return "", err
 		}

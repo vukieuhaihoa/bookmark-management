@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	service "github.com/vukieuhaihoa/bookmark-management/internal/app/service/link"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/service/link/mocks"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
 )
 
 func TestHandler_GetURL(t *testing.T) {
@@ -42,16 +43,33 @@ func TestHandler_GetURL(t *testing.T) {
 			expectedURL:  "http://example.com",
 		},
 		{
-			name: "code not found",
+			name: "code not found - redis code",
 
 			setupRequest: func(ctx *gin.Context) {
-				ctx.Request = httptest.NewRequest(http.MethodGet, "/v1/links/unknown", nil)
-				ctx.Params = gin.Params{{Key: "code", Value: "unknown"}}
+				ctx.Request = httptest.NewRequest(http.MethodGet, "/v1/links/leetcode", nil)
+				ctx.Params = gin.Params{{Key: "code", Value: "leetcode"}}
 			},
 
 			setupMockSvc: func(ctx *gin.Context) *mocks.Service {
 				svcMock := mocks.NewService(t)
-				svcMock.On("GetURL", ctx, "unknown").Return("", service.ErrCodeNotFound)
+				svcMock.On("GetURL", ctx, "leetcode").Return("", service.ErrCodeNotFound)
+				return svcMock
+			},
+
+			expectedCode: http.StatusBadRequest,
+			expectedURL:  "",
+		},
+		{
+			name: "code not found - bookmark code",
+
+			setupRequest: func(ctx *gin.Context) {
+				ctx.Request = httptest.NewRequest(http.MethodGet, "/v1/links/leetcodexx", nil)
+				ctx.Params = gin.Params{{Key: "code", Value: "leetcodexx"}}
+			},
+
+			setupMockSvc: func(ctx *gin.Context) *mocks.Service {
+				svcMock := mocks.NewService(t)
+				svcMock.On("GetURL", ctx, "leetcodexx").Return("", dbutils.ErrRecordNotFoundType)
 				return svcMock
 			},
 

@@ -18,6 +18,7 @@ import (
 
 	bookmarkHandler "github.com/vukieuhaihoa/bookmark-management/internal/app/handler/bookmark"
 	bookmarkRepository "github.com/vukieuhaihoa/bookmark-management/internal/app/repository/bookmark"
+	"github.com/vukieuhaihoa/bookmark-management/internal/app/repository/cache"
 	bookmarkService "github.com/vukieuhaihoa/bookmark-management/internal/app/service/bookmark"
 
 	healthCheckHandler "github.com/vukieuhaihoa/bookmark-management/internal/app/handler/healthcheck"
@@ -198,6 +199,8 @@ type handlers struct {
 }
 
 func (a *api) registerHandlers() *handlers {
+	redisCache := cache.NewRedisCache(a.redisClient)
+
 	passSvc := passwordService.NewPasswordService(a.randomCodeGen)
 	passHandler := passwordHandler.NewPasswordHandler(passSvc)
 
@@ -205,17 +208,18 @@ func (a *api) registerHandlers() *handlers {
 	healthCheckSvc := healthCheckService.NewHealthCheckService(a.cfg.ServiceName, a.cfg.InstanceID, healthCheckRepo)
 	healthCheckHandler := healthCheckHandler.NewHealthCheckHandler(healthCheckSvc)
 
-	shortenURLRepo := linkRepository.NewLinkRepository(a.redisClient)
-	shortenURLSvc := linkService.NewLinkService(shortenURLRepo, a.randomCodeGen)
-	shortenURLHandler := linkHandler.NewLinkHandler(shortenURLSvc)
-
 	userRepo := userRepository.NewUserRepository(a.db)
 	userSvc := userService.NewUserService(userRepo, a.passwordHashing, a.jwtGenerator)
 	userHandler := userHandler.NewUserHandler(userSvc)
 
 	bookmarkRepo := bookmarkRepository.NewBookmarkRepository(a.db)
 	bookmarkSvc := bookmarkService.NewBookmarkService(bookmarkRepo, a.randomCodeGen)
-	bookmarkHandler := bookmarkHandler.NewBookmarkHandler(bookmarkSvc)
+	bookmarkSvcWithCache := bookmarkService.NewBookmarkServiceWithCache(bookmarkSvc, redisCache)
+	bookmarkHandler := bookmarkHandler.NewBookmarkHandler(bookmarkSvcWithCache)
+
+	shortenURLRepo := linkRepository.NewLinkRepository(a.redisClient)
+	shortenURLSvc := linkService.NewLinkService(shortenURLRepo, a.randomCodeGen, bookmarkRepo)
+	shortenURLHandler := linkHandler.NewLinkHandler(shortenURLSvc)
 
 	return &handlers{
 		healthCheckHandler: healthCheckHandler,

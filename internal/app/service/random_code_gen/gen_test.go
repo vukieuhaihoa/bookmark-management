@@ -26,7 +26,7 @@ func TestPasswordService_GeneratePassword(t *testing.T) {
 
 			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
 				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", 12).Return("AbcD1234EfGh", nil)
+				codeGenMock.On("GenerateCode", "", 12).Return("AbcD1234EfGh", nil)
 				return codeGenMock
 			},
 

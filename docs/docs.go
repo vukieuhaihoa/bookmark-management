@@ -80,25 +80,36 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/bookmark.ListBookmarksResponse"
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/model.Bookmark"
+                                    }
+                                },
+                                "pagination": {
+                                    "$ref": "#/definitions/common.Paging"
+                                }
+                            }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     }
                 }
@@ -141,19 +152,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     }
                 }
@@ -199,25 +210,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     }
                 }
@@ -252,25 +263,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     }
                 }
@@ -417,13 +428,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     }
                 }
@@ -460,25 +471,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     }
                 }
@@ -512,25 +523,33 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user.loginResponse"
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     }
                 }
@@ -570,13 +589,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.Message"
+                            "$ref": "#/definitions/common.Message"
                         }
                     }
                 }
@@ -584,20 +603,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "bookmark.ListBookmarksResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Bookmark"
-                    }
-                },
-                "pagination": {
-                    "$ref": "#/definitions/common.Paging"
-                }
-            }
-        },
         "bookmark.createBookmarkRequest": {
             "type": "object",
             "required": [
@@ -637,6 +642,15 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "common.Message": {
+            "type": "object",
+            "properties": {
+                "details": {},
+                "message": {
                     "type": "string"
                 }
             }
@@ -702,6 +716,9 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
+                "code_shorten_encoded": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -738,15 +755,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.Message": {
-            "type": "object",
-            "properties": {
-                "details": {},
-                "message": {
                     "type": "string"
                 }
             }
@@ -805,17 +813,6 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "testuser001"
-                }
-            }
-        },
-        "user.loginResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
                 }
             }
         },
