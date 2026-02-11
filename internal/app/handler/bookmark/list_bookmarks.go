@@ -11,7 +11,6 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/common"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
-	"github.com/vukieuhaihoa/bookmark-management/pkg/response"
 )
 
 // allowedSortFields maps the allowed sorting fields from query parameters to database column names.
@@ -29,12 +28,6 @@ type PagingRequest struct {
 	Sort  string `form:"sort" example:"-created_at,updated_at" default:"-created_at"`
 }
 
-// ListBookmarksResponse represents the response returned when listing bookmarks.
-type ListBookmarksResponse struct {
-	Data       []*model.Bookmark `json:"data"`
-	Pagination *common.Paging    `json:"pagination"`
-}
-
 // ListBookmarks handles the HTTP request to list bookmarks for the authenticated user.
 // It supports pagination and sorting based on query parameters.
 // @Summary      List bookmarks
@@ -44,28 +37,28 @@ type ListBookmarksResponse struct {
 // @Param        page   query     int    false  "Page number"        default(1)    example(1)
 // @Param        limit  query     int    false  "Number of items per page"  default(5)    example(5)
 // @Param        sort   query     string false  "Sorting criteria("-" for descending), e.g., -created_at,updated_at"  default(-created_at)  example(-created_at,description)
-// @Success      200    {object}  ListBookmarksResponse
-// @Failure      400    {object}  response.Message
-// @Failure      401    {object}  response.Message
-// @Failure      500    {object}  response.Message
+// @Success      200    {object}  object{data=[]model.Bookmark,pagination=common.Paging}
+// @Failure      400    {object}  common.Message
+// @Failure      401    {object}  common.Message
+// @Failure      500    {object}  common.Message
 // @Security		 Bearer
 // @Router       /v1/bookmarks [get]
 func (b *bookmarkHandler) ListBookmarks(c *gin.Context) {
 	input := &PagingRequest{}
 	if err := c.ShouldBindQuery(input); err != nil {
-		c.JSON(http.StatusBadRequest, response.InputFieldError(err))
+		c.JSON(http.StatusBadRequest, common.InputFieldError(err))
 		return
 	}
 
 	userID, err := utils.GetUserIDFromJWTClaims(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, response.UnauthorizedResponse)
+		c.JSON(http.StatusUnauthorized, common.UnauthorizedResponse)
 		return
 	}
 
 	parsedSortFields, err := common.ParseSortParams(input.Sort, allowedSortFields)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, response.InvalidSortedFieldResponse)
+		c.JSON(http.StatusBadRequest, common.InvalidSortedFieldResponse)
 		return
 	}
 
@@ -74,7 +67,7 @@ func (b *bookmarkHandler) ListBookmarks(c *gin.Context) {
 	res, err := b.svc.ListBookmarks(c, userID, queryOptions)
 	switch {
 	case errors.Is(err, dbutils.ErrInvalidSortField):
-		c.JSON(http.StatusBadRequest, response.InputErrorResponse)
+		c.JSON(http.StatusBadRequest, common.InputErrorResponse)
 		return
 	case errors.Is(err, nil):
 	default:
@@ -82,16 +75,12 @@ func (b *bookmarkHandler) ListBookmarks(c *gin.Context) {
 			Str("operation", "ListBookmarks").
 			Err(err).
 			Msg("service return error when list bookmarks")
-		c.JSON(http.StatusInternalServerError, response.InternalErrorResponse)
+		c.JSON(http.StatusInternalServerError, common.InternalErrorResponse)
 		return
 	}
 
-	c.JSON(http.StatusOK, &ListBookmarksResponse{
-		Data: res,
-		Pagination: &common.Paging{
-			Page:  queryOptions.Paging.Page,
-			Limit: queryOptions.Paging.Limit,
-			Total: queryOptions.Total,
-		},
+	c.JSON(http.StatusOK, &common.SuccessResponse[[]*model.Bookmark]{
+		Data:       res,
+		Pagination: &queryOptions.Paging,
 	})
 }

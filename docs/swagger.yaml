@@ -1,14 +1,5 @@
 basePath: /
 definitions:
-  bookmark.ListBookmarksResponse:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/model.Bookmark'
-        type: array
-      pagination:
-        $ref: '#/definitions/common.Paging'
-    type: object
   bookmark.createBookmarkRequest:
     properties:
       description:
@@ -37,6 +28,12 @@ definitions:
     required:
     - description
     - url
+    type: object
+  common.Message:
+    properties:
+      details: {}
+      message:
+        type: string
     type: object
   common.Paging:
     properties:
@@ -104,12 +101,6 @@ definitions:
       username:
         type: string
     type: object
-  response.Message:
-    properties:
-      details: {}
-      message:
-        type: string
-    type: object
   user.createUserRequest:
     properties:
       display_name:
@@ -150,13 +141,6 @@ definitions:
     required:
     - password
     - username
-    type: object
-  user.loginResponse:
-    properties:
-      data:
-        type: string
-      message:
-        type: string
     type: object
   user.updateProfileRequest:
     properties:
@@ -219,19 +203,26 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/bookmark.ListBookmarksResponse'
+            properties:
+              data:
+                items:
+                  $ref: '#/definitions/model.Bookmark'
+                type: array
+              pagination:
+                $ref: '#/definitions/common.Paging'
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
       security:
       - Bearer: []
       summary: List bookmarks
@@ -258,15 +249,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
       security:
       - Bearer: []
       summary: Create a new bookmark
@@ -289,19 +280,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
       security:
       - Bearer: []
       summary: Delete bookmark by ID
@@ -329,19 +320,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
       security:
       - BearerAuth: []
       summary: Update bookmark by ID
@@ -436,11 +427,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
       security:
       - Bearer: []
       summary: Get user profile
@@ -463,19 +454,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
       security:
       - Bearer: []
       summary: Update user profile
@@ -499,19 +490,24 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.loginResponse'
+            properties:
+              data:
+                type: string
+              message:
+                type: string
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
       summary: User login
       tags:
       - Users
@@ -537,11 +533,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.Message'
+            $ref: '#/definitions/common.Message'
       summary: Create a new user
       tags:
       - Users

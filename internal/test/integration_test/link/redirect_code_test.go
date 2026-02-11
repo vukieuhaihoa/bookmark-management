@@ -10,6 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
+	"github.com/vukieuhaihoa/bookmark-management/internal/test/fixture"
 	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 )
@@ -72,6 +73,8 @@ func TestGetURLEndpoint_RedirectCode(t *testing.T) {
 
 			mockRedis := tc.setupMockRedis(ctx)
 
+			db := fixture.NewFixture(t, &fixture.BookmarkCommonTestDB{})
+
 			apiEngine := api.New(&api.EngineOpts{
 				Engine: gin.New(),
 				Cfg: &api.Config{
@@ -79,7 +82,7 @@ func TestGetURLEndpoint_RedirectCode(t *testing.T) {
 					InstanceID:  "test_instance_id_1",
 				},
 				RedisClient:     mockRedis,
-				SqlDB:           nil,
+				SqlDB:           db,
 				RandomCodeGen:   utils.NewCodeGenerator(),
 				PasswordHashing: nil,
 				JWTGenerator:    nil,

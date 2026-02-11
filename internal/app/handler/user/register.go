@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/common"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
-	"github.com/vukieuhaihoa/bookmark-management/pkg/response"
 )
 
 type createUserRequest struct {
@@ -31,20 +31,20 @@ type createUserResponse struct {
 // @Produce      json
 // @Param        user  body      createUserRequest  true  "User to create"
 // @Success      201   {object}  createUserResponse
-// @Failure      400   {object}  response.Message
-// @Failure      500   {object}  response.Message
+// @Failure      400   {object}  common.Message
+// @Failure      500   {object}  common.Message
 // @Router       /v1/users/register [post]
 func (u *userHandler) CreateUser(c *gin.Context) {
 	input := &createUserRequest{}
 	if err := c.ShouldBindJSON(input); err != nil {
-		c.JSON(http.StatusBadRequest, response.InputFieldError(err))
+		c.JSON(http.StatusBadRequest, common.InputFieldError(err))
 		return
 	}
 
 	createdUser, err := u.userSvc.CreateUser(c, input.Username, input.Password, input.DisplayName, input.Email)
 	switch {
 	case errors.Is(err, dbutils.ErrDuplicationType):
-		c.JSON(http.StatusBadRequest, response.Message{
+		c.JSON(http.StatusBadRequest, common.Message{
 			Message: "username or email already exists",
 		})
 		return
@@ -54,11 +54,11 @@ func (u *userHandler) CreateUser(c *gin.Context) {
 			Str("operation", "CreateUser").
 			Err(err).
 			Msg("service return error when create user")
-		c.JSON(http.StatusInternalServerError, response.InternalErrorResponse)
+		c.JSON(http.StatusInternalServerError, common.InternalErrorResponse)
 		return
 	}
 
-	c.JSON(http.StatusCreated, &createUserResponse{
+	c.JSON(http.StatusCreated, &common.SuccessResponse[*model.User]{
 		Data:    createdUser,
 		Message: "Register an user successfully!",
 	})

@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/common"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/jwtutils"
-	"github.com/vukieuhaihoa/bookmark-management/pkg/response"
 )
 
 // JWTAuth defines the interface for JWT authentication middleware.
@@ -60,7 +60,7 @@ func (j *jwtAuth) JWTAuth() gin.HandlerFunc {
 		// validate token
 		claims, err := j.jwtValidator.ValidateToken(tokenString)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response.InvalidTokenResponse)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, common.InvalidTokenResponse)
 			return
 		}
 

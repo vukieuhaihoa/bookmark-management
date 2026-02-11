@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	service "github.com/vukieuhaihoa/bookmark-management/internal/app/service/link"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
 )
 
 // GetURL handles the request to retrieve the original URL from a shortened code.
@@ -37,7 +38,7 @@ func (h *linkHandler) GetURL(c *gin.Context) {
 	url, err := h.linkSvc.GetURL(c, code)
 	// Handle different error cases with switch statement
 	switch {
-	case errors.Is(err, service.ErrCodeNotFound):
+	case errors.Is(err, service.ErrCodeNotFound) || errors.Is(err, dbutils.ErrRecordNotFoundType):
 		c.JSON(http.StatusBadRequest, shortenURLResponse{
 			Message: ErrCodeNotFound.Error(),
 		})

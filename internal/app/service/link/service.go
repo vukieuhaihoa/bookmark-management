@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/vukieuhaihoa/bookmark-management/internal/app/repository/bookmark"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/repository/link"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 )
@@ -55,6 +56,7 @@ type Service interface {
 type linkService struct {
 	repo          link.Repository
 	randomCodeGen utils.CodeGenerator
+	bookmarkRepo  bookmark.Repository
 }
 
 // NewLinkService creates a new instance of Service.
@@ -62,12 +64,14 @@ type linkService struct {
 // Parameters:
 //   - repo: The repository used for URL storage operations
 //   - randomCodeGen: The code generator used for generating random codes
+//   - bookmarkRepo: The bookmark repository for additional bookmark-related operations
 //
 // Returns:
 //   - Service: The initialized Service instance
-func NewLinkService(repo link.Repository, randomCodeGen utils.CodeGenerator) Service {
+func NewLinkService(repo link.Repository, randomCodeGen utils.CodeGenerator, bookmarkRepo bookmark.Repository) Service {
 	return &linkService{
 		repo:          repo,
 		randomCodeGen: randomCodeGen,
+		bookmarkRepo:  bookmarkRepo,
 	}
 }
