@@ -28,6 +28,8 @@ func (s *linkService) ShortenURL(ctx context.Context, originalURL string, expire
 			return "", err
 		}
 
+		urlCode = "r" + urlCode
+
 		// Check if the URL code already exists
 		_, err = s.repo.GetURL(ctx, urlCode)
 		if err != nil {

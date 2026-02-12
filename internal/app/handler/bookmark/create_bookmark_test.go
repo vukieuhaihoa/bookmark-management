@@ -58,16 +58,16 @@ func TestHandler_CreateBookmark(t *testing.T) {
 						Base: model.Base{
 							ID: "bookmark-456",
 						},
-						URL:         inputRequest.URL,
-						Description: inputRequest.Description,
-						UserID:      "user-123",
-						Code:        "abcdefghij",
+						URL:                inputRequest.URL,
+						Description:        inputRequest.Description,
+						UserID:             "user-123",
+						CodeShortenEncoded: "p_1A",
 					}, nil)
 				return svcMock
 			},
 
 			expectedCode:     http.StatusCreated,
-			expectedResponse: `{"data":{"id":"bookmark-456","created_at":"0001-01-01T00:00:00Z","updated_at":"0001-01-01T00:00:00Z","description":"Example Website","url":"https://example.com","code":"abcdefghij"},"message":"Create a bookmark successfully!"}`,
+			expectedResponse: `{"data":{"id":"bookmark-456","created_at":"0001-01-01T00:00:00Z","updated_at":"0001-01-01T00:00:00Z","description":"Example Website","url":"https://example.com","code":"p_1A"},"message":"Create a bookmark successfully!"}`,
 		},
 		{
 			name: "unauthorized user",

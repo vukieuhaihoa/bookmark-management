@@ -213,7 +213,7 @@ func (a *api) registerHandlers() *handlers {
 	userHandler := userHandler.NewUserHandler(userSvc)
 
 	bookmarkRepo := bookmarkRepository.NewBookmarkRepository(a.db)
-	bookmarkSvc := bookmarkService.NewBookmarkService(bookmarkRepo, a.randomCodeGen)
+	bookmarkSvc := bookmarkService.NewBookmarkService(bookmarkRepo)
 	bookmarkSvcWithCache := bookmarkService.NewBookmarkServiceWithCache(bookmarkSvc, redisCache)
 	bookmarkHandler := bookmarkHandler.NewBookmarkHandler(bookmarkSvcWithCache)
 

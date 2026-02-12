@@ -74,7 +74,7 @@ func NewFixture(t *testing.T, fix Fixture) *gorm.DB {
 	// step 3: generate test data
 	err = fix.GenerateData()
 	if err != nil {
-		t.Fatalf("Failed to generate test data")
+		t.Fatalf("Failed to generate test data: %v", err)
 	}
 
 	return fix.DB()

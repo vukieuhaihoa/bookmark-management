@@ -65,10 +65,10 @@ func TestHandler_ListBookmarks(t *testing.T) {
 								CreatedAt: fixture.TestTime.Add(4 * time.Hour),
 								UpdatedAt: fixture.TestTime.Add(4 * time.Hour),
 							},
-							UserID:      "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
-							URL:         "https://db-tutorials.dev/postgresql-indexing",
-							Code:        "XXXX000005",
-							Description: "Learn PostgreSQL indexing basics",
+							UserID:             "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
+							URL:                "https://db-tutorials.dev/postgresql-indexing",
+							Description:        "Learn PostgreSQL indexing basics",
+							CodeShortenEncoded: "p_8",
 						},
 						{
 							Base: model.Base{
@@ -76,17 +76,17 @@ func TestHandler_ListBookmarks(t *testing.T) {
 								CreatedAt: fixture.TestTime.Add(5 * time.Hour),
 								UpdatedAt: fixture.TestTime.Add(5 * time.Hour),
 							},
-							UserID:      "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
-							URL:         "https://redis.io/docs/manual/data-types/",
-							Code:        "XXXX000006",
-							Description: "Redis data types documentation",
+							UserID:             "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
+							URL:                "https://redis.io/docs/manual/data-types/",
+							Description:        "Redis data types documentation",
+							CodeShortenEncoded: "p_9",
 						},
 					}, nil)
 				return svcMock
 			},
 
 			expectedCode:     http.StatusOK,
-			expectedResponse: "{\"data\":[{\"id\":\"a1b2c3d4-e5f6-7890-abcd-ef0000000008\",\"created_at\":\"2023-01-01T04:00:00Z\",\"updated_at\":\"2023-01-01T04:00:00Z\",\"description\":\"Learn PostgreSQL indexing basics\",\"url\":\"https://db-tutorials.dev/postgresql-indexing\",\"code\":\"XXXX000005\"},{\"id\":\"a1b2c3d4-e5f6-7890-abcd-ef0000000009\",\"created_at\":\"2023-01-01T05:00:00Z\",\"updated_at\":\"2023-01-01T05:00:00Z\",\"description\":\"Redis data types documentation\",\"url\":\"https://redis.io/docs/manual/data-types/\",\"code\":\"XXXX000006\"}],\"pagination\":{\"page\":1,\"limit\":2,\"total\":0}}",
+			expectedResponse: `{"data":[{"id":"a1b2c3d4-e5f6-7890-abcd-ef0000000008","created_at":"2023-01-01T04:00:00Z","updated_at":"2023-01-01T04:00:00Z","description":"Learn PostgreSQL indexing basics","url":"https://db-tutorials.dev/postgresql-indexing","code":"p_8"},{"id":"a1b2c3d4-e5f6-7890-abcd-ef0000000009","created_at":"2023-01-01T05:00:00Z","updated_at":"2023-01-01T05:00:00Z","description":"Redis data types documentation","url":"https://redis.io/docs/manual/data-types/","code":"p_9"}],"pagination":{"page":1,"limit":2,"total":0}}`,
 		},
 		{
 			name: "invalid sort field",

@@ -68,6 +68,17 @@ type Repository interface {
 	//   - *model.Bookmark: The bookmark model if found.
 	//   - error: An error if the retrieval fails or the bookmark is not found.
 	GetBookmarkByCode(ctx context.Context, code string) (*model.Bookmark, error)
+
+	// GetBookmarkByCodeShortenEncoded retrieves a bookmark from the database by its unique code_shorten_encoded.
+	//
+	// Parameters:
+	//   - ctx: The context for managing request-scoped values and cancellation.
+	//   - code: The unique code_shorten_encoded of the bookmark.
+	//
+	// Returns:
+	//   - *model.Bookmark: The bookmark model if found.
+	//   - error: An error if the retrieval fails or the bookmark is not found.
+	GetBookmarkByCodeShortenEncoded(ctx context.Context, code string) (*model.Bookmark, error)
 }
 
 // bookmarkRepository implements the Repository interface for bookmark data operations.

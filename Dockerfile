@@ -30,6 +30,21 @@ ARG _outputdir="/tmp/coverage"
 COPY --from=test-exec ${_outputdir}/coverage.out /
 COPY --from=test-exec ${_outputdir}/coverage.html /
 
+FROM base AS build_migration
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -tags musl -ldflags="-w -s" \
+    -o migrate_script_for_v3 cmd/migrate/main.go
+
+FROM alpine AS migration
+
+WORKDIR /app
+
+COPY --from=build_migration /opt/app/migrate_script_for_v3 /app/migrate_script_for_v3
+COPY --from=build_migration /opt/app/migrations /app/migrations
+
+CMD ["/app/migrate_script_for_v3"]
+
 FROM alpine AS final
 
 ARG app_name=app

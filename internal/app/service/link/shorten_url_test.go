@@ -36,15 +36,15 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
 				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, "abcd1234").Return("", redis.Nil)
-				repoMock.On("StoreURL", ctx, "abcd1234", "https://example.com", 3600).Return(nil)
+				repoMock.On("GetURL", ctx, "rabcd1234").Return("", redis.Nil)
+				repoMock.On("StoreURL", ctx, "rabcd1234", "https://example.com", 3600).Return(nil)
 				return repoMock
 			},
 
 			inputOriginalURL: "https://example.com",
 			inputExpireIn:    3600,
 
-			expectedCode:  "abcd1234",
+			expectedCode:  "rabcd1234",
 			expectedError: nil,
 		},
 		{
@@ -77,8 +77,8 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
 				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, "abcd1234").Return("", redis.Nil)
-				repoMock.On("StoreURL", ctx, "abcd1234", "https://example.com", 3600).Return(assert.AnError)
+				repoMock.On("GetURL", ctx, "rabcd1234").Return("", redis.Nil)
+				repoMock.On("StoreURL", ctx, "rabcd1234", "https://example.com", 3600).Return(assert.AnError)
 				return repoMock
 			},
 
@@ -100,16 +100,16 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
 				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, "abcd1234").Return("https://collision.com", nil).Once()
-				repoMock.On("GetURL", ctx, "efgh5678").Return("", redis.Nil).Once()
-				repoMock.On("StoreURL", ctx, "efgh5678", "https://example.com", 3600).Return(nil).Once()
+				repoMock.On("GetURL", ctx, "rabcd1234").Return("https://collision.com", nil).Once()
+				repoMock.On("GetURL", ctx, "refgh5678").Return("", redis.Nil).Once()
+				repoMock.On("StoreURL", ctx, "refgh5678", "https://example.com", 3600).Return(nil).Once()
 				return repoMock
 			},
 
 			inputOriginalURL: "https://example.com",
 			inputExpireIn:    3600,
 
-			expectedCode:  "efgh5678",
+			expectedCode:  "refgh5678",
 			expectedError: nil,
 		},
 		{
@@ -123,7 +123,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
 				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, "abcd1234").Return("https://collision.com", nil)
+				repoMock.On("GetURL", ctx, "rabcd1234").Return("https://collision.com", nil)
 				return repoMock
 			},
 
@@ -144,7 +144,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
 				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, "abcd1234").Return("", assert.AnError)
+				repoMock.On("GetURL", ctx, "rabcd1234").Return("", assert.AnError)
 				return repoMock
 			},
 
@@ -164,8 +164,8 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
 				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, "abcd1234").Return("", redis.Nil)
-				repoMock.On("StoreURL", ctx, "abcd1234", "https://example.com", 3600).Return(assert.AnError)
+				repoMock.On("GetURL", ctx, "rabcd1234").Return("", redis.Nil)
+				repoMock.On("StoreURL", ctx, "rabcd1234", "https://example.com", 3600).Return(assert.AnError)
 				return repoMock
 			},
 

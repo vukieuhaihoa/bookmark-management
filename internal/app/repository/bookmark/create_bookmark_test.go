@@ -1,7 +1,6 @@
 package bookmark
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,7 +35,6 @@ func TestRepository_CreateBookmark(t *testing.T) {
 				},
 				UserID:      "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
 				URL:         "https://example.com/newbookmark",
-				Code:        "XXXX000077",
 				Description: "New bookmark for Test User 1",
 			},
 
@@ -46,29 +44,10 @@ func TestRepository_CreateBookmark(t *testing.T) {
 				},
 				UserID:      "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
 				URL:         "https://example.com/newbookmark",
-				Code:        "XXXX000077",
 				Description: "New bookmark for Test User 1",
 			},
 		},
-		{
-			name: "Fail to create bookmark with duplicate code",
 
-			setupDB: func(t *testing.T) *gorm.DB {
-				return fixture.NewFixture(t, &fixture.BookmarkCommonTestDB{})
-			},
-
-			inputBookmark: &model.Bookmark{
-				Base: model.Base{
-					ID: "b1c2d3e4-f5g6-7890-abcd-ef0000000088",
-				},
-				UserID:      "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
-				URL:         "https://example.com/anotherbookmark",
-				Code:        "XXXX000001", // Duplicate code
-				Description: "Another bookmark for Test User 1",
-			},
-
-			expectedError: dbutils.ErrDuplicationType,
-		},
 		{
 			name: "Fail to create bookmark with non-existing user",
 
@@ -82,7 +61,6 @@ func TestRepository_CreateBookmark(t *testing.T) {
 				},
 				UserID:      "non-existing-user-id",
 				URL:         "https://example.com/invaliduserbookmark",
-				Code:        "XXXX000055",
 				Description: "Bookmark with non-existing user",
 			},
 
@@ -101,7 +79,6 @@ func TestRepository_CreateBookmark(t *testing.T) {
 			output, err := repo.CreateBookmark(ctx, tc.inputBookmark)
 
 			if tc.expectedError != nil {
-				fmt.Println(err)
 				assert.ErrorIs(t, err, tc.expectedError)
 				return
 			}
@@ -129,7 +106,7 @@ func helperCompareBookmarks(t *testing.T, db *gorm.DB, actual *model.Bookmark) {
 	assert.Equal(t, expected.ID, actual.ID)
 	assert.Equal(t, expected.UserID, actual.UserID)
 	assert.Equal(t, expected.URL, actual.URL)
-	assert.Equal(t, expected.Code, actual.Code)
 	assert.Equal(t, expected.Description, actual.Description)
-
+	assert.Equal(t, expected.CodeShorten, actual.CodeShorten)
+	assert.Equal(t, expected.CodeShortenEncoded, actual.CodeShortenEncoded)
 }

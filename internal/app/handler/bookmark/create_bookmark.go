@@ -69,6 +69,7 @@ func (h *bookmarkHandler) CreateBookmark(c *gin.Context) {
 		return
 	}
 
+	// IMPORTANT: From version 3. Code is replaced by code_shorten_encoded, but we still keep code in the response for backward compatibility with clients using old version.
 	c.JSON(http.StatusCreated, &createBookmarkResponse{
 		Data:    bookmark,
 		Message: "Create a bookmark successfully!",
