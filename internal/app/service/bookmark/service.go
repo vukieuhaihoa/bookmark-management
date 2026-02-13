@@ -69,7 +69,7 @@ type bookmarkService struct {
 }
 
 // NewBookmarkService creates a new instance of bookmarkService.
-// It takes a bookmark.Repository and a utils.CodeGenerator as parameters
+// It takes a bookmark.Repository as its dependency
 // and returns a Service interface.
 func NewBookmarkService(repo bookmark.Repository) Service {
 	return &bookmarkService{

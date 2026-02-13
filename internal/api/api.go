@@ -4,6 +4,7 @@ package api
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -40,6 +41,8 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/validators"
 )
+
+var registerValidationsOnce sync.Once
 
 // Engine defines the contract for the HTTP server engine.
 // It provides methods to start and manage the API server lifecycle.
@@ -183,10 +186,12 @@ func (a *api) registerRoutes() {
 }
 
 func (a *api) registerValidations() {
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		// Register custom validation functions here
-		v.RegisterValidation("password_strength", validators.PasswordStrength)
-	}
+	registerValidationsOnce.Do(func() {
+		if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+			// Register custom validation functions here
+			v.RegisterValidation("password_strength", validators.PasswordStrength)
+		}
+	})
 }
 
 // handler aggregates all HTTP handlers for different API endpoints.

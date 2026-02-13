@@ -1,7 +1,6 @@
 package bookmark
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -155,7 +154,6 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 			respRec := tc.setupTestHTTP(api)
 
 			assert.Equal(t, tc.expectedStatusCode, respRec.Code)
-			fmt.Println(respRec.Body.String())
 			assert.Equal(t, tc.expectedResponse, respRec.Body.String())
 		})
 	}

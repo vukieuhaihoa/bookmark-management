@@ -6,7 +6,7 @@ type Bookmark struct {
 
 	Description string `gorm:"column:description" json:"description"`
 	URL         string `gorm:"not null;column:url" json:"url"`
-	Code        string `gorm:"column:code" json:"-"` // this field will be deleted form version 3 and replaced by CodeShortenEncoded
+	Code        string `gorm:"column:code" json:"-"` // this field will be deleted from version 3 and replaced by CodeShortenEncoded
 
 	UserID string `gorm:"not null;column:user_id" json:"-"`
 	User   User   `gorm:"foreignKey:UserID;references:ID" json:"-"`

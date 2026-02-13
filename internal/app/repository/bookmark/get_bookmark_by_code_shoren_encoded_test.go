@@ -70,7 +70,7 @@ func TestRepository_GetBookmarkByCodeShortenEncoded(t *testing.T) {
 			output, err := repo.GetBookmarkByCodeShortenEncoded(context.Background(), tc.inputCode)
 
 			if tc.expectedError != nil {
-				assert.ErrorAs(t, err, &tc.expectedError)
+				assert.ErrorIs(t, err, tc.expectedError)
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.expectedOutput, output)
