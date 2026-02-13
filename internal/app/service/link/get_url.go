@@ -19,13 +19,22 @@ import (
 //   - error: An error object if the retrieval operation fails, otherwise nil
 func (s *linkService) GetURL(ctx context.Context, urlCode string) (string, error) {
 	switch {
-	case strings.HasPrefix(urlCode, "r"):
+	case len(urlCode) == defaultURLCodeLength ||
+		(strings.HasPrefix(urlCode, "r") && len(urlCode) == defaultURLCodeLength+1):
+		// Redis (old 8-char + new r-prefixed 9-char)
 		url, err := s.repo.GetURL(ctx, urlCode)
 		if errors.Is(err, redis.Nil) {
 			return "", ErrCodeNotFound
 		}
 
 		return url, err
+	case len(urlCode) == 10:
+		// backward compatibility for old url code length of 10
+		bookmark, err := s.bookmarkRepo.GetBookmarkByCode(ctx, urlCode)
+		if err != nil {
+			return "", err
+		}
+		return bookmark.URL, nil
 	case strings.HasPrefix(urlCode, "p"):
 		bookmark, err := s.bookmarkRepo.GetBookmarkByCodeShortenEncoded(ctx, urlCode)
 		if err != nil {
@@ -33,23 +42,6 @@ func (s *linkService) GetURL(ctx context.Context, urlCode string) (string, error
 		}
 		return bookmark.URL, nil
 	default:
-		// For backward compatibility, if the code doesn't have a prefix, check both repositories
-		// Determine if the URL code corresponds to a Redis-stored link or a bookmark
-		// Deprecated: This block is for backward compatibility and may be removed in future versions
-		if len(urlCode) == defaultURLCodeLength {
-			url, err := s.repo.GetURL(ctx, urlCode)
-			if errors.Is(err, redis.Nil) {
-				return "", ErrCodeNotFound
-			}
-
-			return url, err
-		}
-
-		// Deprecated: This block is for backward compatibility and may be removed in future versions
-		bookmark, err := s.bookmarkRepo.GetBookmarkByCode(ctx, urlCode)
-		if err != nil {
-			return "", err
-		}
-		return bookmark.URL, nil
+		return "", ErrCodeNotFound
 	}
 }
