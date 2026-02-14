@@ -1,6 +1,7 @@
 package bookmark
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -109,4 +110,6 @@ func helperCompareBookmarks(t *testing.T, db *gorm.DB, actual *model.Bookmark) {
 	assert.Equal(t, expected.Description, actual.Description)
 	assert.Equal(t, expected.CodeShorten, actual.CodeShorten)
 	assert.Equal(t, expected.CodeShortenEncoded, actual.CodeShortenEncoded)
+
+	assert.True(t, strings.HasPrefix(actual.CodeShortenEncoded, model.BookmarkShortenPrefix), "CodeShortenEncoded should have the correct prefix")
 }

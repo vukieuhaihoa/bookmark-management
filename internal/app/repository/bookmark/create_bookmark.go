@@ -31,7 +31,7 @@ func (r *bookmarkRepository) CreateBookmark(ctx context.Context, bookmark *model
 			return err
 		}
 
-		bookmark.CodeShortenEncoded = "p" + encoded
+		bookmark.CodeShortenEncoded = model.BookmarkShortenPrefix + encoded
 
 		if err := tx.Save(bookmark).Error; err != nil {
 			return err

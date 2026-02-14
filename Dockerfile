@@ -34,7 +34,7 @@ FROM base AS build_migration
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -tags musl -ldflags="-w -s" \
-    -o migrate_script_for_v3 cmd/migrate/main.go
+    -o migrate_script_for_v3 cmd/script/main.go
 
 FROM alpine AS migration
 

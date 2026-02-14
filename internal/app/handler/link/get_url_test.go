@@ -26,7 +26,7 @@ func TestHandler_GetURL(t *testing.T) {
 		expectedURL  string
 	}{
 		{
-			name: "successful get URL",
+			name: "successful get URL - redis link old format from v1 and v2",
 
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(http.MethodGet, "/v1/links/abcd1234", nil)
@@ -43,7 +43,7 @@ func TestHandler_GetURL(t *testing.T) {
 			expectedURL:  "http://example.com",
 		},
 		{
-			name: "code not found - redis code",
+			name: "code not found - redis code old format from v1 and v2",
 
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(http.MethodGet, "/v1/links/leetcode", nil)
@@ -60,7 +60,7 @@ func TestHandler_GetURL(t *testing.T) {
 			expectedURL:  "",
 		},
 		{
-			name: "code not found - bookmark code",
+			name: "code not found - bookmark code old format from v1 and v2",
 
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(http.MethodGet, "/v1/links/leetcodexx", nil)
@@ -77,7 +77,7 @@ func TestHandler_GetURL(t *testing.T) {
 			expectedURL:  "",
 		},
 		{
-			name: "internal server error",
+			name: "internal server error - redis link old format from v1 and v2",
 
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(http.MethodGet, "/v1/links/abcd1234", nil)

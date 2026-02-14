@@ -26,7 +26,7 @@ func TestService_GetURL(t *testing.T) {
 		expectedError       error
 	}{
 		{
-			name: "Get URL successfully - redis link",
+			name: "Get URL successfully - redis link old format from v1 and v2",
 
 			setupMockLinkRepo: func(ctx context.Context, code string) *mockLinkRepo.Repository {
 				repoMock := mockLinkRepo.NewRepository(t)
@@ -56,13 +56,13 @@ func TestService_GetURL(t *testing.T) {
 				return mockBookmarkRepo.NewRepository(t)
 			},
 
-			inputURLCode: "rabcd1234",
+			inputURLCode: model.RedisShortenPrefix + "abcd1234",
 
 			expectedOriginalURL: "https://example.com",
 			expectedError:       nil,
 		},
 		{
-			name: "URL code not found - redis link",
+			name: "URL code not found - redis link old format from v1 and v2",
 
 			setupMockLinkRepo: func(ctx context.Context, code string) *mockLinkRepo.Repository {
 				repoMock := mockLinkRepo.NewRepository(t)
@@ -92,13 +92,13 @@ func TestService_GetURL(t *testing.T) {
 				return mockBookmarkRepo.NewRepository(t)
 			},
 
-			inputURLCode: "rleetcode",
+			inputURLCode: model.RedisShortenPrefix + "leetcode",
 
 			expectedOriginalURL: "",
 			expectedError:       ErrCodeNotFound,
 		},
 		{
-			name: "Get URL Successfully - bookmark link",
+			name: "Get URL Successfully - bookmark link old format from v1 and v2",
 
 			setupMockLinkRepo: func(ctx context.Context, code string) *mockLinkRepo.Repository {
 				repoMock := mockLinkRepo.NewRepository(t)
@@ -133,7 +133,7 @@ func TestService_GetURL(t *testing.T) {
 				}, nil)
 				return repoMock
 			},
-			inputURLCode:        "p1AE",
+			inputURLCode:        model.BookmarkShortenPrefix + "1AE",
 			expectedOriginalURL: "https://example.com/bookmark",
 			expectedError:       nil,
 		},

@@ -69,6 +69,14 @@ func NewEncoding(alphabet string) *Encoding {
 // StdEncoding is the standard base62 encoding using 0-9, A-Z, a-z.
 var StdEncoding = NewEncoding("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 
+// EncodeInt64ToString encodes a non-negative int64 number into a base62 string using the encoding's alphabet.
+//
+// Parameters:
+//   - num: The non-negative int64 number to encode.
+//
+// Returns:
+//   - A base62 encoded string representing the input number.
+//   - An error if the input number is negative.
 func (enc *Encoding) EncodeInt64ToString(num int64) (string, error) {
 	// Handle negative numbers
 	if num < 0 {
@@ -95,6 +103,14 @@ func (enc *Encoding) EncodeInt64ToString(num int64) (string, error) {
 	return string(result), nil
 }
 
+// DecodeStringToInt64 decodes a base62 encoded string back to an int64.
+//
+// Parameters:
+//   - s: The base62 encoded string to decode.
+//
+// Returns:
+//   - The decoded int64 value.
+//   - An error if the input string contains invalid characters or if the decoded value exceeds int64 limits.
 func (enc *Encoding) DecodeStringToInt64(s string) (int64, error) {
 	if len(s) == 0 {
 		return 0, nil

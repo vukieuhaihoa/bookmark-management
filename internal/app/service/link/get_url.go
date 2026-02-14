@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
 )
 
 // GetURL retrieves the original URL associated with the given shortened URL code.
@@ -20,7 +21,7 @@ import (
 func (s *linkService) GetURL(ctx context.Context, urlCode string) (string, error) {
 	switch {
 	case len(urlCode) == defaultURLCodeLength ||
-		(strings.HasPrefix(urlCode, "r") && len(urlCode) == defaultURLCodeLength+1):
+		(strings.HasPrefix(urlCode, model.RedisShortenPrefix) && len(urlCode) == defaultURLCodeLength+1):
 		// Redis (old 8-char + new r-prefixed 9-char)
 		url, err := s.repo.GetURL(ctx, urlCode)
 		if errors.Is(err, redis.Nil) {
@@ -35,7 +36,7 @@ func (s *linkService) GetURL(ctx context.Context, urlCode string) (string, error
 			return "", err
 		}
 		return bookmark.URL, nil
-	case strings.HasPrefix(urlCode, "p"):
+	case strings.HasPrefix(urlCode, model.BookmarkShortenPrefix):
 		bookmark, err := s.bookmarkRepo.GetBookmarkByCodeShortenEncoded(ctx, urlCode)
 		if err != nil {
 			return "", err

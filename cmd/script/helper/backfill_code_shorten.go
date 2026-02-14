@@ -1,4 +1,4 @@
-package script
+package helper
 
 import (
 	"fmt"
@@ -26,9 +26,8 @@ func (schema_migrations) TableName() string {
 
 func BackfillForCodeShortenCol(db *gorm.DB) error {
 	sm := &schema_migrations{}
-	err := db.Model(&schema_migrations{}).Where("version = ?", 3).First(sm).Error
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to verify migration version for backfilling code_shorten column.")
+	if err := db.Model(&schema_migrations{}).Where("version = ?", 3).First(sm).Error; err != nil {
+		log.Error().Err(err).Msg("Failed to check if migration for code_shorten column has been applied.")
 		return err
 	}
 
@@ -44,7 +43,7 @@ func BackfillForCodeShortenCol(db *gorm.DB) error {
 		return nil
 	}
 
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err := db.Transaction(func(tx *gorm.DB) error {
 		for i, bm := range bookmarks {
 			seq := int64(i + 1)
 			encoded, err := encoding.StdEncoding.EncodeInt64ToString(seq)
