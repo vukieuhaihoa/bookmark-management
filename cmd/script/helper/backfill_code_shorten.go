@@ -24,6 +24,17 @@ func (schema_migrations) TableName() string {
 	return "schema_migrations"
 }
 
+// BackfillForCodeShortenCol backfills the code_shorten and code_shorten_encoded columns for existing bookmarks.
+//
+// This function retrieves all bookmarks ordered by creation time, assigns a sequential code_shorten value,
+// encodes it to generate code_shorten_encoded, and updates each bookmark in the database. It also ensures
+// that the sequence for code_shorten continues correctly after the backfill.
+//
+// Parameters:
+//   - db: The GORM database instance to use for querying and updating bookmarks.
+//
+// Returns:
+//   - An error if any database operation fails during the backfill process.
 func BackfillForCodeShortenCol(db *gorm.DB) error {
 	sm := &schema_migrations{}
 	if err := db.Model(&schema_migrations{}).Where("version = ?", 3).First(sm).Error; err != nil {
