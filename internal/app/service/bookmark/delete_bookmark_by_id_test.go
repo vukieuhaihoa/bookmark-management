@@ -56,7 +56,7 @@ func TestService_DeleteBookmarkByID(t *testing.T) {
 
 			ctx := t.Context()
 			repoMock := tc.setupMockRepo(ctx)
-			service := NewBookmarkService(repoMock, nil)
+			service := NewBookmarkService(repoMock)
 			err := service.DeleteBookmarkByID(ctx, tc.inputID, tc.inputUserID)
 			if tc.expectedError != nil {
 				assert.Equal(t, tc.expectedError, err)

@@ -9,7 +9,6 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
 	mockBookmarkRepo "github.com/vukieuhaihoa/bookmark-management/internal/app/repository/bookmark/mocks"
 	mockLinkRepo "github.com/vukieuhaihoa/bookmark-management/internal/app/repository/link/mocks"
-	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
 )
 
 func TestService_GetURL(t *testing.T) {
@@ -27,7 +26,7 @@ func TestService_GetURL(t *testing.T) {
 		expectedError       error
 	}{
 		{
-			name: "Get URL successfully - redis link",
+			name: "Get URL successfully - redis link old format from v1 and v2",
 
 			setupMockLinkRepo: func(ctx context.Context, code string) *mockLinkRepo.Repository {
 				repoMock := mockLinkRepo.NewRepository(t)
@@ -45,7 +44,25 @@ func TestService_GetURL(t *testing.T) {
 			expectedError:       nil,
 		},
 		{
-			name: "URL code not found - redis link",
+			name: "Get URL successfully - redis link new format from v3",
+
+			setupMockLinkRepo: func(ctx context.Context, code string) *mockLinkRepo.Repository {
+				repoMock := mockLinkRepo.NewRepository(t)
+				repoMock.On("GetURL", ctx, code).Return("https://example.com", nil)
+				return repoMock
+			},
+
+			setupMockBookmarkRepo: func(ctx context.Context, code string) *mockBookmarkRepo.Repository {
+				return mockBookmarkRepo.NewRepository(t)
+			},
+
+			inputURLCode: model.RedisShortenPrefix + "abcd1234",
+
+			expectedOriginalURL: "https://example.com",
+			expectedError:       nil,
+		},
+		{
+			name: "URL code not found - redis link old format from v1 and v2",
 
 			setupMockLinkRepo: func(ctx context.Context, code string) *mockLinkRepo.Repository {
 				repoMock := mockLinkRepo.NewRepository(t)
@@ -63,7 +80,25 @@ func TestService_GetURL(t *testing.T) {
 			expectedError:       ErrCodeNotFound,
 		},
 		{
-			name: "Get URL Successfully - bookmark link",
+			name: "URL code not found - redis link new format from v3",
+
+			setupMockLinkRepo: func(ctx context.Context, code string) *mockLinkRepo.Repository {
+				repoMock := mockLinkRepo.NewRepository(t)
+				repoMock.On("GetURL", ctx, code).Return("", redis.Nil)
+				return repoMock
+			},
+
+			setupMockBookmarkRepo: func(ctx context.Context, code string) *mockBookmarkRepo.Repository {
+				return mockBookmarkRepo.NewRepository(t)
+			},
+
+			inputURLCode: model.RedisShortenPrefix + "leetcode",
+
+			expectedOriginalURL: "",
+			expectedError:       ErrCodeNotFound,
+		},
+		{
+			name: "Get URL Successfully - bookmark link old format from v1 and v2",
 
 			setupMockLinkRepo: func(ctx context.Context, code string) *mockLinkRepo.Repository {
 				repoMock := mockLinkRepo.NewRepository(t)
@@ -84,7 +119,7 @@ func TestService_GetURL(t *testing.T) {
 			expectedError:       nil,
 		},
 		{
-			name: "Get URL fails - bookmark link",
+			name: "Get URL Successfully - bookmark link new format from v3",
 
 			setupMockLinkRepo: func(ctx context.Context, code string) *mockLinkRepo.Repository {
 				repoMock := mockLinkRepo.NewRepository(t)
@@ -93,19 +128,37 @@ func TestService_GetURL(t *testing.T) {
 
 			setupMockBookmarkRepo: func(ctx context.Context, code string) *mockBookmarkRepo.Repository {
 				repoMock := mockBookmarkRepo.NewRepository(t)
-				repoMock.On("GetBookmarkByCode", ctx, code).Return(nil, dbutils.ErrRecordNotFoundType)
+				repoMock.On("GetBookmarkByCodeShortenEncoded", ctx, code).Return(&model.Bookmark{
+					URL: "https://example.com/bookmark",
+				}, nil)
+				return repoMock
+			},
+			inputURLCode:        model.BookmarkShortenPrefix + "1AE",
+			expectedOriginalURL: "https://example.com/bookmark",
+			expectedError:       nil,
+		},
+		{
+			name: "Get URL fails - wrong format - not found",
+
+			setupMockLinkRepo: func(ctx context.Context, code string) *mockLinkRepo.Repository {
+				repoMock := mockLinkRepo.NewRepository(t)
+				return repoMock
+			},
+
+			setupMockBookmarkRepo: func(ctx context.Context, code string) *mockBookmarkRepo.Repository {
+				repoMock := mockBookmarkRepo.NewRepository(t)
+				// repoMock.On("GetBookmarkByCode", ctx, code).Return(nil, dbutils.ErrRecordNotFoundType)
 				return repoMock
 			},
 
 			inputURLCode: "unknownbookmark",
 
 			expectedOriginalURL: "",
-			expectedError:       dbutils.ErrRecordNotFoundType,
+			expectedError:       ErrCodeNotFound,
 		},
 	}
 
 	for _, tc := range testCases {
-		tc := tc // capture range variable
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 

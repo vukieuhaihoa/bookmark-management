@@ -37,7 +37,7 @@ func TestShortenURLEndpoint_ShortenURL(t *testing.T) {
 				return respRec
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedCodeLength: 8,
+			expectedCodeLength: 9,
 		},
 		{
 			name: "invalid request payload",

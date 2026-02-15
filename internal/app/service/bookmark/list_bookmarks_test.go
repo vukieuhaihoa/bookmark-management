@@ -45,19 +45,21 @@ func TestService_ListBookmarks(t *testing.T) {
 						Base: model.Base{
 							ID: "a1b2c3d4-e5f6-7890-abcd-ef0000000001",
 						},
-						UserID:      "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
-						URL:         "https://example.com/testuser001",
-						Code:        "XXXX000001",
-						Description: "Bookmark for Test User 1 - record 1",
+						UserID:             "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
+						URL:                "https://example.com/testuser001",
+						Description:        "Bookmark for Test User 1 - record 1",
+						Code:               "XXXX000001",
+						CodeShortenEncoded: "p_1",
 					},
 					{
 						Base: model.Base{
 							ID: "a1b2c3d4-e5f6-7890-abcd-ef0000000002",
 						},
-						UserID:      "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
-						URL:         "https://example.com/testuser002",
-						Code:        "XXXX000002",
-						Description: "Bookmark for Test User 1 - record 2",
+						UserID:             "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
+						URL:                "https://example.com/testuser002",
+						Description:        "Bookmark for Test User 1 - record 2",
+						Code:               "XXXX000002",
+						CodeShortenEncoded: "p_2",
 					},
 				}, nil)
 				return repoMock
@@ -82,19 +84,21 @@ func TestService_ListBookmarks(t *testing.T) {
 					Base: model.Base{
 						ID: "a1b2c3d4-e5f6-7890-abcd-ef0000000001",
 					},
-					UserID:      "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
-					URL:         "https://example.com/testuser001",
-					Code:        "XXXX000001",
-					Description: "Bookmark for Test User 1 - record 1",
+					UserID:             "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
+					URL:                "https://example.com/testuser001",
+					Description:        "Bookmark for Test User 1 - record 1",
+					Code:               "XXXX000001",
+					CodeShortenEncoded: "p_1",
 				},
 				{
 					Base: model.Base{
 						ID: "a1b2c3d4-e5f6-7890-abcd-ef0000000002",
 					},
-					UserID:      "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
-					URL:         "https://example.com/testuser002",
-					Code:        "XXXX000002",
-					Description: "Bookmark for Test User 1 - record 2",
+					UserID:             "4d9326d6-980c-4c62-9709-dbc70a82cbfe",
+					URL:                "https://example.com/testuser002",
+					Description:        "Bookmark for Test User 1 - record 2",
+					Code:               "XXXX000002",
+					CodeShortenEncoded: "p_2",
 				},
 			},
 
@@ -140,14 +144,12 @@ func TestService_ListBookmarks(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
-
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
 			repoMock := tc.setupMockRepo(ctx)
-			service := NewBookmarkService(repoMock, nil)
+			service := NewBookmarkService(repoMock)
 			res, err := service.ListBookmarks(ctx, tc.inputUserID, tc.inputOpts)
 			assert.Equal(t, tc.expectedError, err)
 			assert.Equal(t, tc.expectedOutput, res)

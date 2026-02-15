@@ -6,7 +6,6 @@ import (
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/repository/bookmark"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/common"
-	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 )
 
 const DEFAULT_CODE_LENGTH = 10
@@ -66,16 +65,14 @@ type Service interface {
 
 // bookmarkService is the concrete implementation of the Service interface.
 type bookmarkService struct {
-	repo    bookmark.Repository
-	codeGen utils.CodeGenerator
+	repo bookmark.Repository
 }
 
 // NewBookmarkService creates a new instance of bookmarkService.
-// It takes a bookmark.Repository and a utils.CodeGenerator as parameters
+// It takes a bookmark.Repository as its dependency
 // and returns a Service interface.
-func NewBookmarkService(repo bookmark.Repository, codeGen utils.CodeGenerator) Service {
+func NewBookmarkService(repo bookmark.Repository) Service {
 	return &bookmarkService{
-		repo:    repo,
-		codeGen: codeGen,
+		repo: repo,
 	}
 }

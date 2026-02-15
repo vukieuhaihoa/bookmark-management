@@ -30,6 +30,17 @@ func CreateSQLDBAndMigration() *gorm.DB {
 	return dbClient
 }
 
+// CreateSQLDB initializes and returns a GORM DB client without performing migrations.
+// It returns the initialized GORM DB instance.
+// Returns:
+//   - *gorm.DB: A pointer to the initialized GORM DB instance
+func CreateSQLDB() *gorm.DB {
+	dbClient, err := sqldb.NewClient("")
+	common.HandlerError(err)
+
+	return dbClient
+}
+
 // MigrateDB performs database migrations for the provided GORM DB instance.
 // It migrates the necessary models to ensure the database schema is up to date.
 //

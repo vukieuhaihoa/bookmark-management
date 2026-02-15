@@ -88,7 +88,7 @@ func TestService_UpdateBookmarkByID(t *testing.T) {
 			ctx := t.Context()
 
 			repo := tc.setupRepo(ctx, tc.inputID, tc.inputUserID, tc.inputBookmarkData)
-			service := NewBookmarkService(repo, nil)
+			service := NewBookmarkService(repo)
 
 			err := service.UpdateBookmarkByID(ctx, tc.inputID, tc.inputUserID, tc.inputBookmarkData)
 			if tc.expectedError != nil {

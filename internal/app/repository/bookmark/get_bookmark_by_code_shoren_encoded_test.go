@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestRepository_GetBookmarkByCode(t *testing.T) {
+func TestRepository_GetBookmarkByCodeShortenEncoded(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -27,7 +27,7 @@ func TestRepository_GetBookmarkByCode(t *testing.T) {
 		{
 			name: "Get bookmark by code successfully",
 
-			inputCode: "AAAA000009",
+			inputCode: "p_9",
 
 			setupDB: func(t *testing.T) *gorm.DB {
 				return fixture.NewFixture(t, &fixture.BookmarkCommonTestDB{})
@@ -67,10 +67,10 @@ func TestRepository_GetBookmarkByCode(t *testing.T) {
 			db := tc.setupDB(t)
 			repo := NewBookmarkRepository(db)
 
-			output, err := repo.GetBookmarkByCode(context.Background(), tc.inputCode)
+			output, err := repo.GetBookmarkByCodeShortenEncoded(context.Background(), tc.inputCode)
 
 			if tc.expectedError != nil {
-				assert.ErrorAs(t, err, &tc.expectedError)
+				assert.ErrorIs(t, err, tc.expectedError)
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.expectedOutput, output)
