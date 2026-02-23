@@ -2,6 +2,7 @@ package link
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,6 +11,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
+	"github.com/vukieuhaihoa/bookmark-management/internal/api/middleware"
 	"github.com/vukieuhaihoa/bookmark-management/internal/test/fixture"
 	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
@@ -62,6 +64,28 @@ func TestGetURLEndpoint_RedirectCode(t *testing.T) {
 				return respRec
 			},
 			expectedStatusCode: http.StatusBadRequest,
+			expectedLocation:   "",
+		},
+		{
+			name: "rate limit exceeded",
+
+			setupMockRedis: func(ctx context.Context) *redis.Client {
+				mockRedis := redisPkg.InitMockRedis(t)
+
+				key := fmt.Sprintf(middleware.RateLimitKeyFormat, "192.0.2.1")
+				mockRedis.Set(context.Background(), key, middleware.RateLimitMaxCount, middleware.RateLimitInterval)
+
+				return mockRedis
+			},
+
+			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
+				// Setup HTTP request and recorder
+				req := httptest.NewRequest("GET", "/v1/links/redirect/abcd1234", nil) // Body would be added
+				respRec := httptest.NewRecorder()
+				api.ServeHTTP(respRec, req)
+				return respRec
+			},
+			expectedStatusCode: http.StatusTooManyRequests,
 			expectedLocation:   "",
 		},
 	}

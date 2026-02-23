@@ -692,10 +692,12 @@ const docTemplate = `{
             "properties": {
                 "exp": {
                     "type": "integer",
-                    "maximum": 604800
+                    "maximum": 604800,
+                    "example": 10000
                 },
                 "url": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://www.example.com"
                 }
             }
         },

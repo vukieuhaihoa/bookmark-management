@@ -1,15 +1,19 @@
 package link
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
+	"github.com/vukieuhaihoa/bookmark-management/internal/api/middleware"
 	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/sqldb"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
@@ -21,6 +25,7 @@ func TestShortenURLEndpoint_ShortenURL(t *testing.T) {
 	testCases := []struct {
 		name string
 
+		setupRedis    func(redisClient *redis.Client)
 		setupTestHTTP func(api api.Engine) *httptest.ResponseRecorder
 
 		expectedStatusCode int
@@ -52,11 +57,35 @@ func TestShortenURLEndpoint_ShortenURL(t *testing.T) {
 			expectedStatusCode: http.StatusBadRequest,
 			expectedCodeLength: 0,
 		},
+		{
+			name: "rate limit exceeded",
+
+			// Key insight: httptest.NewRequest always sets RemoteAddr = "192.0.2.1:1234", so gin's c.ClientIP() will always return 192.0.2.1. The rate limit key becomes rate_limit:192.0.2.1.
+			setupRedis: func(redisClient *redis.Client) {
+				key := fmt.Sprintf(middleware.RateLimitKeyFormat, "192.0.2.1")
+				redisClient.Set(context.Background(), key, middleware.RateLimitMaxCount, middleware.RateLimitInterval)
+			},
+
+			setupTestHTTP: func(engine api.Engine) *httptest.ResponseRecorder {
+				req := httptest.NewRequest("POST", "/v1/links/shorten", strings.NewReader(`{"url":"http://example.com","exp":3600}`))
+				respRec := httptest.NewRecorder()
+				engine.ServeHTTP(respRec, req)
+				return respRec
+			},
+			expectedStatusCode: http.StatusTooManyRequests,
+			expectedCodeLength: 0,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
+			redisClient := redisPkg.InitMockRedis(t)
+
+			if tc.setupRedis != nil {
+				tc.setupRedis(redisClient)
+			}
 
 			apiEngine := api.New(&api.EngineOpts{
 				Engine: gin.New(),
@@ -64,7 +93,7 @@ func TestShortenURLEndpoint_ShortenURL(t *testing.T) {
 					ServiceName: "bookmark-service",
 					InstanceID:  "test_instance_id_1",
 				},
-				RedisClient:     redisPkg.InitMockRedis(t),
+				RedisClient:     redisClient,
 				SqlDB:           sqldb.InitMockDB(t),
 				RandomCodeGen:   utils.NewCodeGenerator(),
 				PasswordHashing: nil,

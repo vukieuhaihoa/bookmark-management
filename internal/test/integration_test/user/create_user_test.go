@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
+	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/sqldb"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 )
@@ -70,7 +71,7 @@ func TestUserEndpoint_CreateUser(t *testing.T) {
 					ServiceName: "bookmark_service",
 					InstanceID:  "test_instance_id_1",
 				},
-				RedisClient:     nil,
+				RedisClient:     redisPkg.InitMockRedis(t),
 				SqlDB:           db,
 				RandomCodeGen:   nil,
 				PasswordHashing: utils.NewPasswordHashing(),
