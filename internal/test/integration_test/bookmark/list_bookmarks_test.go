@@ -2,6 +2,7 @@ package bookmark
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +13,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
+	"github.com/vukieuhaihoa/bookmark-management/internal/api/middleware"
 	"github.com/vukieuhaihoa/bookmark-management/internal/test/fixture"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/jwtutils/mocks"
 	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
@@ -24,6 +26,7 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 	testCases := []struct {
 		name string
 
+		setupMockRedis        func(ctx context.Context, redisClient *redis.Client) *redis.Client
 		setupTestHTTP         func(api api.Engine) *httptest.ResponseRecorder
 		setupDB               func(t *testing.T) *gorm.DB
 		setupCache            func(t *testing.T, ctx context.Context) *redis.Client
@@ -114,7 +117,7 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 			},
 
 			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				return nil
+				return redisPkg.InitMockRedis(t)
 			},
 
 			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
@@ -143,7 +146,7 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 			},
 
 			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				return nil
+				return redisPkg.InitMockRedis(t)
 			},
 
 			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
@@ -172,7 +175,7 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 			},
 
 			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				return nil
+				return redisPkg.InitMockRedis(t)
 			},
 
 			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
@@ -201,7 +204,7 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 			},
 
 			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				return nil
+				return redisPkg.InitMockRedis(t)
 			},
 
 			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
@@ -213,6 +216,91 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   `{"message":"Invalid sorted field"}`,
 		},
+		{
+			name: "list bookmarks failed - rate limit exceeded",
+
+			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
+				// Setup HTTP request and recorder
+				req := httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-created_at", nil)
+				req.Header.Set("Authorization", "Bearer valid_jwt_token")
+				respRec := httptest.NewRecorder()
+				api.ServeHTTP(respRec, req)
+				return respRec
+			},
+
+			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
+				key := fmt.Sprintf(middleware.RateLimitKeyFormat, "4d9326d6-980c-4c62-9709-dbc70a82cbfe")
+				redisClient.Set(ctx, key, middleware.UserID_RateLimitMaxCount, middleware.UserID_RateLimitInterval)
+				return redisClient
+			},
+
+			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
+				jwtValidator := mocks.NewJWTValidator(t)
+				jwtValidator.On("ValidateToken", "valid_jwt_token").Return(jwt.MapClaims{"sub": "4d9326d6-980c-4c62-9709-dbc70a82cbfe"}, nil)
+				return jwtValidator
+			},
+
+			setupDB: func(t *testing.T) *gorm.DB {
+				return nil
+			},
+
+			expectedStatusCode: http.StatusTooManyRequests,
+			expectedResponse:   `{"error":"Too many requests. Please try again later."}`,
+		},
+		{
+			name: "list bookmarks failed - invalid token",
+
+			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
+				// Setup HTTP request and recorder
+				req := httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-created_at", nil)
+				req.Header.Set("Authorization", "Bearer invalid_jwt_token")
+				respRec := httptest.NewRecorder()
+				api.ServeHTTP(respRec, req)
+				return respRec
+			},
+
+			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
+				jwtValidator := mocks.NewJWTValidator(t)
+				jwtValidator.On("ValidateToken", "invalid_jwt_token").Return(nil, assert.AnError)
+				return jwtValidator
+			},
+
+			expectedStatusCode: http.StatusUnauthorized,
+			expectedResponse:   `{"message":"Invalid token"}`,
+			setupDB: func(t *testing.T) *gorm.DB {
+				return nil
+			},
+			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
+				return redisPkg.InitMockRedis(t)
+			},
+		},
+		{
+			name: "list bookmarks failed - token does not contain user ID",
+
+			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
+				// Setup HTTP request and recorder
+				req := httptest.NewRequest("GET", "/v1/bookmarks?page=1&limit=2&sort=-created_at", nil)
+				req.Header.Set("Authorization", "Bearer token_without_user_id")
+				respRec := httptest.NewRecorder()
+				api.ServeHTTP(respRec, req)
+				return respRec
+			},
+
+			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
+				jwtValidator := mocks.NewJWTValidator(t)
+				jwtValidator.On("ValidateToken", "token_without_user_id").Return(jwt.MapClaims{}, nil)
+				return jwtValidator
+			},
+
+			expectedStatusCode: http.StatusUnauthorized,
+			expectedResponse:   `{"message":"Unauthorized"}`,
+			setupDB: func(t *testing.T) *gorm.DB {
+				return nil
+			},
+			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
+				return redisPkg.InitMockRedis(t)
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -220,16 +308,19 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()
 
-			db := tc.setupDB(t)
-			cache := tc.setupCache(t, ctx)
 			jwtValidator := tc.setupMockJWTValidator(t)
+			db := tc.setupDB(t)
+			redisClient := redisPkg.InitMockRedis(t)
+			if tc.setupMockRedis != nil {
+				redisClient = tc.setupMockRedis(ctx, redisClient)
+			}
 
 			api := api.New(&api.EngineOpts{
 				Engine: gin.New(),
 				Cfg: &api.Config{
 					ServiceName: "bookmark_service",
 				},
-				RedisClient:  cache,
+				RedisClient:  redisClient,
 				SqlDB:        db,
 				JWTValidator: jwtValidator,
 			})

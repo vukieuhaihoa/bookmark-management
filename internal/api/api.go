@@ -157,7 +157,7 @@ func (a *api) registerRoutes() {
 
 	// API version group
 	v1 := a.app.Group("/v1")
-	v1.Use(allMiddlewares.rateLimitMiddleware.RateLimit()) // Apply rate limiting middleware to all /v1 routes
+	v1.Use(allMiddlewares.rateLimitMiddleware.RateLimit(middleware.RateLimitIPKey)) // Apply rate limiting middleware to all /v1 routes
 	{
 		// Register password generation endpoint
 		v1.GET("/generate-password", allHandler.passwordHandler.GeneratePassword)
@@ -176,6 +176,7 @@ func (a *api) registerRoutes() {
 
 	v1Private := a.app.Group("/v1")
 	v1Private.Use(allMiddlewares.jwtAuth.JWTAuth())
+	v1Private.Use(allMiddlewares.rateLimitMiddleware.RateLimit(middleware.RateLimitUserIDKey)) // Apply rate limiting middleware to all /v1 routes for authenticated users
 	{
 		v1Private.GET("/self/info", allHandler.userHandler.GetProfile)
 		v1Private.PUT("/self/info", allHandler.userHandler.UpdateProfile)

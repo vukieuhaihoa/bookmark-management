@@ -10,8 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	service "github.com/vukieuhaihoa/bookmark-management/internal/app/service/user"
 	svcMocks "github.com/vukieuhaihoa/bookmark-management/internal/app/service/user/mocks"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
 )
 
 func TestUser_Login(t *testing.T) {
@@ -96,7 +96,7 @@ func TestUser_Login(t *testing.T) {
 			setupMockSvc: func(ctx *gin.Context, inputRequest *loginRequest) *svcMocks.Service {
 				mockUserSvc := svcMocks.NewService(t)
 				mockUserSvc.On("Login", mock.Anything, inputRequest.Username, inputRequest.Password).
-					Return("", service.ErrInvalidCredentials)
+					Return("", dbutils.ErrRecordNotFoundType)
 				return mockUserSvc
 			},
 			expectedCode:     http.StatusBadRequest,

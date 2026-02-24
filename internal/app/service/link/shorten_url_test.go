@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
 	mockRepo "github.com/vukieuhaihoa/bookmark-management/internal/app/repository/link/mocks"
@@ -37,8 +36,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
 				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, model.RedisShortenPrefix+"abcd1234").Return("", redis.Nil)
-				repoMock.On("StoreURL", ctx, model.RedisShortenPrefix+"abcd1234", "https://example.com", 3600).Return(nil)
+				repoMock.On("StoreURLIfAbsent", ctx, model.RedisShortenPrefix+"abcd1234", "https://example.com", 3600).Return(true, nil)
 				return repoMock
 			},
 
@@ -68,7 +66,7 @@ func TestService_ShortenURL(t *testing.T) {
 			expectedError: assert.AnError,
 		},
 		{
-			name: "Fail to store URL",
+			name: "Fail to store URL due to repository error",
 
 			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
 				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
@@ -78,8 +76,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
 				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, model.RedisShortenPrefix+"abcd1234").Return("", redis.Nil)
-				repoMock.On("StoreURL", ctx, model.RedisShortenPrefix+"abcd1234", "https://example.com", 3600).Return(assert.AnError)
+				repoMock.On("StoreURLIfAbsent", ctx, model.RedisShortenPrefix+"abcd1234", "https://example.com", 3600).Return(false, assert.AnError)
 				return repoMock
 			},
 
@@ -101,9 +98,8 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
 				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, model.RedisShortenPrefix+"abcd1234").Return("https://collision.com", nil).Once()
-				repoMock.On("GetURL", ctx, model.RedisShortenPrefix+"efgh5678").Return("", redis.Nil).Once()
-				repoMock.On("StoreURL", ctx, model.RedisShortenPrefix+"efgh5678", "https://example.com", 3600).Return(nil).Once()
+				repoMock.On("StoreURLIfAbsent", ctx, model.RedisShortenPrefix+"abcd1234", "https://example.com", 3600).Return(false, nil).Once()
+				repoMock.On("StoreURLIfAbsent", ctx, model.RedisShortenPrefix+"efgh5678", "https://example.com", 3600).Return(true, nil).Once()
 				return repoMock
 			},
 
@@ -124,7 +120,7 @@ func TestService_ShortenURL(t *testing.T) {
 
 			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
 				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, model.RedisShortenPrefix+"abcd1234").Return("https://collision.com", nil)
+				repoMock.On("StoreURLIfAbsent", ctx, model.RedisShortenPrefix+"abcd1234", "https://example.com", 3600).Return(false, nil)
 				return repoMock
 			},
 
@@ -133,48 +129,6 @@ func TestService_ShortenURL(t *testing.T) {
 
 			expectedCode:  "",
 			expectedError: ErrMaxRetriesExceeded,
-		},
-		{
-			name: "Fail to check existing URL due to repo error",
-
-			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
-				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", 8).Return("abcd1234", nil)
-				return codeGenMock
-			},
-
-			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
-				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, model.RedisShortenPrefix+"abcd1234").Return("", assert.AnError)
-				return repoMock
-			},
-
-			inputOriginalURL: "https://example.com",
-			inputExpireIn:    3600,
-
-			expectedCode:  "",
-			expectedError: assert.AnError,
-		},
-		{
-			name: "Fail to store URL after retries",
-			setupMockRandomCodeGen: func() *mockRandomCodeGen.CodeGenerator {
-				codeGenMock := mockRandomCodeGen.NewCodeGenerator(t)
-				codeGenMock.On("GenerateCode", 8).Return("abcd1234", nil)
-				return codeGenMock
-			},
-
-			setupMockRepo: func(ctx context.Context) *mockRepo.Repository {
-				repoMock := mockRepo.NewRepository(t)
-				repoMock.On("GetURL", ctx, model.RedisShortenPrefix+"abcd1234").Return("", redis.Nil)
-				repoMock.On("StoreURL", ctx, model.RedisShortenPrefix+"abcd1234", "https://example.com", 3600).Return(assert.AnError)
-				return repoMock
-			},
-
-			inputOriginalURL: "https://example.com",
-			inputExpireIn:    3600,
-
-			expectedCode:  "",
-			expectedError: assert.AnError,
 		},
 	}
 

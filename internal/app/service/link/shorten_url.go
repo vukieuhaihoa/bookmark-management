@@ -2,9 +2,7 @@ package link
 
 import (
 	"context"
-	"errors"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
 )
 
@@ -20,40 +18,23 @@ import (
 //   - string: The generated shortened URL code
 //   - error: An error object if the shortening operation fails, otherwise nil
 func (s *linkService) ShortenURL(ctx context.Context, originalURL string, expireIn int) (string, error) {
-	var urlCode string
-	var err error
-
 	for attempt := 1; attempt <= maxRetryAttempts; attempt++ {
-		urlCode, err = s.randomCodeGen.GenerateCode(defaultURLCodeLength)
+		urlCode, err := s.randomCodeGen.GenerateCode(defaultURLCodeLength)
 		if err != nil {
 			return "", err
 		}
 
 		urlCode = model.RedisShortenPrefix + urlCode
 
-		// Check if the URL code already exists
-		_, err = s.repo.GetURL(ctx, urlCode)
+		stored, err := s.repo.StoreURLIfAbsent(ctx, urlCode, originalURL, expireIn)
 		if err != nil {
-			// If the error is redis.Nil, the key doesn't exist - this is what we want
-			if errors.Is(err, redis.Nil) {
-				// URL code is unique, proceed to store it
-				break
-			}
-			// For any other error, return it
 			return "", err
 		}
-
-		// URL code already exists, retry if we haven't exhausted attempts
-		if attempt == maxRetryAttempts {
-			return "", ErrMaxRetriesExceeded
+		if stored {
+			return urlCode, nil // atomically claimed
 		}
+		// collision — another request already holds this key, retry
 	}
 
-	// Store the URL with the unique code
-	err = s.repo.StoreURL(ctx, urlCode, originalURL, expireIn)
-	if err != nil {
-		return "", err
-	}
-
-	return urlCode, nil
+	return "", ErrMaxRetriesExceeded
 }
