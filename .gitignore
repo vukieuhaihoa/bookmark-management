@@ -25,3 +25,7 @@ cmd/test/
 # RSA keys
 private_key.pem
 public_key.pem
+
+
+# AI
+.claude

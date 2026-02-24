@@ -56,9 +56,11 @@ definitions:
   link.shortenURLRequest:
     properties:
       exp:
+        example: 10000
         maximum: 604800
         type: integer
       url:
+        example: https://www.example.com
         type: string
     required:
     - exp

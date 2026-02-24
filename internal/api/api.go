@@ -20,6 +20,7 @@ import (
 	bookmarkHandler "github.com/vukieuhaihoa/bookmark-management/internal/app/handler/bookmark"
 	bookmarkRepository "github.com/vukieuhaihoa/bookmark-management/internal/app/repository/bookmark"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/repository/cache"
+	"github.com/vukieuhaihoa/bookmark-management/internal/app/repository/ratelimit"
 	bookmarkService "github.com/vukieuhaihoa/bookmark-management/internal/app/service/bookmark"
 
 	healthCheckHandler "github.com/vukieuhaihoa/bookmark-management/internal/app/handler/healthcheck"
@@ -144,6 +145,7 @@ func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Currently registers the password generation endpoint.
 func (a *api) registerRoutes() {
 	allHandler := a.registerHandlers()
+	allMiddlewares := a.registerMiddlewares()
 
 	// Swagger info setup
 	docs.SwaggerInfo.Host = a.cfg.AppHostName
@@ -155,6 +157,7 @@ func (a *api) registerRoutes() {
 
 	// API version group
 	v1 := a.app.Group("/v1")
+	v1.Use(allMiddlewares.rateLimitMiddleware.RateLimit()) // Apply rate limiting middleware to all /v1 routes
 	{
 		// Register password generation endpoint
 		v1.GET("/generate-password", allHandler.passwordHandler.GeneratePassword)
@@ -171,9 +174,8 @@ func (a *api) registerRoutes() {
 
 	}
 
-	jwtMiddleware := middleware.NewJWTAuth(a.jwtValidator)
 	v1Private := a.app.Group("/v1")
-	v1Private.Use(jwtMiddleware.JWTAuth())
+	v1Private.Use(allMiddlewares.jwtAuth.JWTAuth())
 	{
 		v1Private.GET("/self/info", allHandler.userHandler.GetProfile)
 		v1Private.PUT("/self/info", allHandler.userHandler.UpdateProfile)
@@ -194,7 +196,7 @@ func (a *api) registerValidations() {
 	})
 }
 
-// handler aggregates all HTTP handlers for different API endpoints.
+// handlers aggregates all HTTP handlers for different API endpoints.
 type handlers struct {
 	healthCheckHandler healthCheckHandler.Handler
 	passwordHandler    passwordHandler.Handler
@@ -203,6 +205,7 @@ type handlers struct {
 	bookmarkHandler    bookmarkHandler.Handler
 }
 
+// registerHandlers initializes and returns all handler instances used in the API.
 func (a *api) registerHandlers() *handlers {
 	redisCache := cache.NewRedisCache(a.redisClient)
 
@@ -232,5 +235,24 @@ func (a *api) registerHandlers() *handlers {
 		shortenURLHandler:  shortenURLHandler,
 		userHandler:        userHandler,
 		bookmarkHandler:    bookmarkHandler,
+	}
+}
+
+// middlewares aggregates all middleware instances used in the API.
+type middlewares struct {
+	jwtAuth             middleware.JWTAuth
+	rateLimitMiddleware middleware.RateLimit
+}
+
+// registerMiddlewares configures and returns all middleware instances used in the API.
+func (a *api) registerMiddlewares() *middlewares {
+	jwtAuth := middleware.NewJWTAuth(a.jwtValidator)
+
+	rateLimitRepo := ratelimit.NewRedisRepo(a.redisClient)
+	rateLimitMiddleware := middleware.NewRateLimit(rateLimitRepo)
+
+	return &middlewares{
+		jwtAuth:             jwtAuth,
+		rateLimitMiddleware: rateLimitMiddleware,
 	}
 }

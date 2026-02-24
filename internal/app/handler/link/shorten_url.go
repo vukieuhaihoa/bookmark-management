@@ -8,8 +8,8 @@ import (
 )
 
 type shortenURLRequest struct {
-	URL      string `json:"url" binding:"required,url"`
-	ExpireIn int    `json:"exp" binding:"required,lte=604800"`
+	URL      string `json:"url" binding:"required,url" example:"https://www.example.com"`
+	ExpireIn int    `json:"exp" binding:"required,lte=604800" example:"10000"`
 }
 
 type shortenURLResponse struct {

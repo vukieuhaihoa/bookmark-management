@@ -1,204 +1,304 @@
 # Bookmark Management
 
-A Go-based bookmark management application with a clean architecture pattern, supporting password generation and health check functionality.
+A Go-based REST API for managing bookmarks with URL shortening, user authentication, Redis caching, and rate limiting.
 
 ## Project Structure
 
 ```
 bookmark-management/
-├── cmd/                                    # Application entry points
-│   └── api/                                # Main API server entry point
-│       └── main.go                         # Application bootstrap and startup
+├── cmd/
+│   ├── api/main.go                         # Main API server entry point
+│   ├── migrate/main.go                     # Standalone DB migration runner
+│   ├── script/                             # Utility scripts (e.g., backfill)
+│   └── test/main.go                        # Test helper entry point
 │
-├── internal/                               # Private application code (not importable by other projects)
-│   ├── api/                                # API layer - HTTP server setup and routing
-│   │   ├── api.go                          # Gin framework implementation with Engine interface
-│   │   └── config.go                       # Configuration management with environment variables
-│   │
-│   ├── handler/                            # HTTP request handlers - translates HTTP requests to service calls
-│   │   ├── pass_handler.go                 # Password generation HTTP handlers
-│   │   ├── pass_handler_test.go            # Unit tests for password handler
-│   │   ├── health_check_handler.go         # Health check HTTP handlers
-│   │   └── health_check_handler_test.go    # Unit tests for health check handler
-│   │
-│   ├── service/                            # Business logic layer - core application logic
-│   │   ├── pass_service.go                 # Password generation service implementation
-│   │   ├── pass_service_test.go            # Unit tests for password service
-│   │   ├── health_check_service.go         # Health check service implementation
-│   │   ├── health_check_service_test.go    # Unit tests for health check service
-│   │   └── mocks/                          # Mock implementations for testing
-│   │       ├── pass_service.go             # Mock password service
-│   │       └── health_check_service.go     # Mock health check service
-│   │
-│   ├── test/                               # Integration and endpoint tests
-│   │   └── endpoint/                       # Endpoint-level integration tests
-│   │       └── password_endpoint_test.go   # Password endpoint integration tests
-│   │
-│   ├── model/                              # Data models - domain entities and data structures
-│   │                                       # (Reserved for future bookmark models)
-│   │
-│   └── repository/                         # Data access layer - database/storage abstractions
-│                                           # (Reserved for future data persistence)
+├── docs/                                   # Auto-generated Swagger documentation
 │
-├── .gitignore                              # Git ignore patterns
-├── go.mod                                  # Go module dependencies
-├── go.sum                                  # Go module checksums
-└── README.md                               # Project documentation
+├── internal/
+│   ├── api/                                # Gin engine setup, routing, middleware wiring
+│   │   ├── api.go                          # Route & handler registration
+│   │   ├── config.go                       # App config (env vars)
+│   │   └── middleware/
+│   │       ├── jwtauth.go                  # JWT authentication middleware
+│   │       └── ratelimit.go                # IP-based rate limiting middleware
+│   │
+│   ├── app/
+│   │   ├── handler/                        # HTTP request/response layer (one dir per feature)
+│   │   │   ├── bookmark/
+│   │   │   ├── healthcheck/
+│   │   │   ├── link/
+│   │   │   ├── random_code_gen/
+│   │   │   ├── user/
+│   │   │   └── utils/                      # Shared handler utilities (JWT claims, request parsing)
+│   │   │
+│   │   ├── service/                        # Business logic layer (one dir per feature)
+│   │   │   ├── bookmark/                   # Includes cache decorator (NewBookmarkServiceWithCache)
+│   │   │   ├── healthcheck/
+│   │   │   ├── link/
+│   │   │   ├── random_code_gen/
+│   │   │   └── user/
+│   │   │
+│   │   ├── repository/                     # Data access layer (one dir per feature)
+│   │   │   ├── bookmark/                   # PostgreSQL via GORM
+│   │   │   ├── cache/                      # Generic Redis cache operations
+│   │   │   ├── healthcheck/
+│   │   │   ├── link/                       # Redis-backed URL storage
+│   │   │   ├── ratelimit/                  # Redis-backed rate limit counters
+│   │   │   └── user/                       # PostgreSQL via GORM
+│   │   │
+│   │   └── model/                          # GORM domain entities
+│   │       ├── base.go
+│   │       ├── bookmark.go
+│   │       ├── const.go
+│   │       └── user.go
+│   │
+│   ├── infrastructure/                     # Dependency wiring (composition root)
+│   │   ├── api.go                          # CreateAPI() bootstraps all deps → api.New()
+│   │   ├── dbs.go                          # CreateSQLDB(), CreateRedisCon()
+│   │   └── jwt.go                          # JWT generator/validator init
+│   │
+│   └── test/
+│       ├── fixture/                        # Shared test case helpers
+│       └── integration_test/               # Integration tests per feature
+│
+├── migrations/                             # Sequential SQL migration files (golang-migrate)
+│   ├── 000001_add_user.{up,down}.sql
+│   ├── 000002_add_bookmark.{up,down}.sql
+│   └── 000003_add_code_shorten_and_code_shorten_encoded.{up,down}.sql
+│
+├── pkg/                                    # Shared, reusable packages
+│   ├── common/                             # Standardized error & response helpers
+│   ├── dbutils/                            # DB-specific error utilities
+│   ├── encoding/                           # Base62 encoding
+│   ├── jwtutils/                           # RSA-based JWT generator & validator
+│   ├── logger/                             # Log level helpers (zerolog)
+│   ├── redis/                              # Redis client & config
+│   ├── sqldb/                              # GORM client, config, migrations
+│   ├── utils/                              # Code generator, password hashing
+│   └── validators/                         # Custom Gin validators (e.g., password_strength)
+│
+├── Dockerfile
+├── Makefile
+├── docker-compose.yaml                     # Production stack
+├── docker-compose.dev.yaml                 # Local dev stack (PostgreSQL + Redis only)
+├── go.mod
+└── README.md
 ```
-
-## Folder Descriptions
-
-### `cmd/`
-**Purpose**: Contains the main entry points for the application.
-
-- **`cmd/api/`**: The main application entry point that initializes and starts the HTTP server. This follows Go's standard project layout where each executable has its own directory under `cmd/`.
-
-### `internal/`
-**Purpose**: Contains private application code that is not meant to be imported by other projects. This enforces encapsulation and prevents external dependencies on internal implementation details.
-
-#### `internal/api/`
-**Purpose**: API layer responsible for HTTP server setup, routing, and framework initialization.
-
-- Implements the `Engine` interface for HTTP server abstraction
-- Handles the creation of HTTP servers using the Gin framework
-- Registers routes and connects handlers to endpoints
-- Manages server lifecycle (startup and shutdown)
-- Provides configuration management through environment variables
-- Supports the `http.Handler` interface via `ServeHTTP` method
-
-#### `internal/handler/`
-**Purpose**: HTTP request handlers that translate HTTP requests into service calls and format responses.
-
-- Acts as the presentation layer, handling HTTP-specific concerns
-- Validates and parses incoming requests
-- Calls appropriate services to execute business logic
-- Formats and returns HTTP responses
-- Includes comprehensive unit tests with mocked dependencies
-- Currently implements:
-  - Password generation handlers
-  - Health check handlers
-
-#### `internal/service/`
-**Purpose**: Business logic layer containing the core application logic.
-
-- Implements domain-specific business rules and operations
-- Independent of HTTP concerns (can be used by handlers, CLI tools, etc.)
-- Contains the password generation service with cryptographic security
-- Contains the health check service for monitoring application status
-- Includes comprehensive unit tests to ensure correctness
-- Provides mock implementations in the `mocks/` subdirectory for testing
-
-#### `internal/model/`
-**Purpose**: Data models and domain entities.
-
-- Defines the structure of domain objects (bookmarks, users, etc.)
-- Currently empty, reserved for future bookmark-related models
-- Will contain structs representing the core business entities
-
-#### `internal/repository/`
-**Purpose**: Data access layer providing abstractions for data persistence.
-
-- Defines interfaces and implementations for database/storage operations
-- Abstracts away database-specific details from the service layer
-- Reserved for future data persistence implementations
-- Will handle CRUD operations for bookmarks and other entities
-
-#### `internal/test/`
-**Purpose**: Integration and endpoint tests for the application.
-
-- Contains endpoint-level integration tests
-- Tests the full request/response cycle
-- Validates API behavior and contract
-- Uses real HTTP requests to test handlers
 
 ## Architecture
 
-This project follows a **layered architecture** pattern:
+```
+Request → Middleware (JWT / RateLimit) → Handler → Service → Repository → PostgreSQL / Redis
+```
 
-1. **API Layer** (`internal/api/`) - HTTP server and routing
-2. **Handler Layer** (`internal/handler/`) - Request/response handling
-3. **Service Layer** (`internal/service/`) - Business logic
-4. **Repository Layer** (`internal/repository/`) - Data access (to be implemented)
-5. **Model Layer** (`internal/model/`) - Domain entities (to be implemented)
+### Layer Responsibilities
+
+| Layer | Path | Responsibility |
+|---|---|---|
+| API | `internal/api/` | Gin engine, route registration, middleware wiring |
+| Handler | `internal/app/handler/` | HTTP request parsing, response formatting |
+| Service | `internal/app/service/` | Business logic, interface + implementation |
+| Repository | `internal/app/repository/` | Data access via GORM (PostgreSQL) or Redis |
+| Model | `internal/app/model/` | GORM domain structs (`User`, `Bookmark`, …) |
+| Infrastructure | `internal/infrastructure/` | Composition root — wires all dependencies |
+| Pkg | `pkg/` | Reusable utilities shared across layers |
+
+### Caching Pattern
+
+The bookmark service uses a **decorator pattern** for transparent Redis caching:
+
+```go
+bookmarkSvc := bookmarkService.NewBookmarkService(bookmarkRepo)
+bookmarkSvcWithCache := bookmarkService.NewBookmarkServiceWithCache(bookmarkSvc, redisCache)
+```
+
+### Rate Limiting
+
+IP-based rate limiting is applied to all `/v1` routes:
+- **Max requests**: 20 per 10-second window
+- **Storage**: Redis (key format `rate_limit:<client_ip>`)
+- Returns `429 Too Many Requests` when exceeded
 
 ## Features
 
-- **Password Generation**: Secure random password generation with cryptographic security
-- **Health Checks**: Application health monitoring with service name and instance ID tracking
-- **Configuration Management**: Environment-based configuration with sensible defaults
-- **Clean Architecture**: Separation of concerns with layered architecture pattern
-- **Comprehensive Testing**: Unit tests, integration tests, and mock implementations
-- **HTTP Server Abstraction**: Engine interface for flexible HTTP server implementations
-- **Gin Framework**: High-performance HTTP routing with middleware support
+- **Bookmark Management** — Full CRUD (create, list, update, delete) with Redis caching
+- **URL Shortening** — Shorten URLs with auto-generated codes stored in Redis; redirect by code
+- **User Management** — Register, login with bcrypt password hashing
+- **JWT Authentication** — RSA-256 signed tokens; middleware protects private routes
+- **Rate Limiting** — Redis-backed IP rate limiting on all `/v1` routes
+- **Health Check** — Pings both PostgreSQL and Redis; returns service name & instance ID
+- **Password Generation** — Cryptographically secure random password generation
+- **Swagger UI** — Auto-generated API docs at `/swagger/index.html`
+- **Docker Support** — Multi-stage Dockerfile; dev and production compose files
+- **Database Migrations** — Sequential SQL migrations via `golang-migrate`
+- **80% Coverage Gate** — Test suite enforces minimum coverage threshold
 
 ## Getting Started
 
 ### Prerequisites
 
-- Go 1.25.5 or higher
+- Go 1.25.5+
+- Docker & Docker Compose
+- `openssl` (for JWT RSA key generation)
+- `swag` CLI: `go install github.com/swaggo/swag/cmd/swag@latest`
 
-### Configuration
-
-The application uses environment variables for configuration:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `APP_PORT` | Server port | `:8080` |
-| `SERVICE_NAME` | Service identifier | `bookmark_service` |
-| `INSTANCE_ID` | Unique instance identifier | Auto-generated UUID |
-
-### Running the Application
+### 1. Generate RSA Keys (required for JWT)
 
 ```bash
-# Run with default configuration
-go run cmd/api/main.go
-
-# Run with custom port
-APP_PORT=:3000 go run cmd/api/main.go
-
-# Run with custom service name and instance ID
-SERVICE_NAME=my_service INSTANCE_ID=instance-1 go run cmd/api/main.go
+make generate-rsa-key
+# Creates private_key.pem and public_key.pem in the project root
 ```
 
-The server will start on `http://localhost:8080` (or your configured port)
+### 2. Start Local Infrastructure
 
-### Available Endpoints
+```bash
+make dev-up       # Starts PostgreSQL (5432) and Redis (6379) via Docker
+```
 
-- `GET /health-check` - Returns application health status, service name, and instance ID
-- `GET /generate-password` - Generates a secure random password (12 characters, alphanumeric)
+### 3. Run the Server
+
+```bash
+make dev-run      # Regenerates Swagger docs, then starts the server
+# or
+go run ./cmd/api/main.go
+```
+
+The server starts at `http://localhost:8080`. Swagger UI is at `http://localhost:8080/swagger/index.html`.
+
+## Available Endpoints
+
+### Public (rate-limited: 20 req / 10s per IP)
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/health-check` | Returns health status, service name, instance ID |
+| `GET` | `/swagger/*any` | Swagger UI (not rate-limited) |
+| `GET` | `/v1/generate-password` | Generate a secure random password |
+| `POST` | `/v1/links/shorten` | Shorten a URL |
+| `GET` | `/v1/links/redirect/:code` | Redirect to the original URL by code |
+| `POST` | `/v1/users/register` | Register a new user |
+| `POST` | `/v1/users/login` | Login and receive a JWT token |
+
+### Protected (requires `Authorization: Bearer <token>`)
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/v1/self/info` | Get current user profile |
+| `PUT` | `/v1/self/info` | Update current user profile |
+| `POST` | `/v1/bookmarks` | Create a new bookmark |
+| `GET` | `/v1/bookmarks` | List bookmarks (paginated) |
+| `PUT` | `/v1/bookmarks/:id` | Update a bookmark |
+| `DELETE` | `/v1/bookmarks/:id` | Delete a bookmark |
+
+## Configuration
+
+All configuration is provided via environment variables:
+
+| Variable | Default | Description |
+|---|---|---|
+| `APP_PORT` | `:8080` | HTTP listen port |
+| `SERVICE_NAME` | `bookmark_service` | Identifier shown in health check |
+| `INSTANCE_ID` | auto UUID | Per-instance identifier |
+| `APP_HOST_NAME` | `localhost:8080` | Swagger host |
+| `DB_HOST` | `localhost` | PostgreSQL host |
+| `DB_PORT` | `5432` | PostgreSQL port |
+| `DB_USER` | `admin` | PostgreSQL user |
+| `DB_PASSWORD` | `admin` | PostgreSQL password |
+| `DB_NAME` | `bookmark_service` | PostgreSQL database |
+| `REDIS_ADDR` | `localhost:6379` | Redis address |
+| `REDIS_PASSWORD` | `""` | Redis password |
+| `REDIS_DB` | `0` | Redis database index |
 
 ## Development
+
+### Make Commands
+
+```bash
+# Local dev
+make dev-up          # Start PostgreSQL + Redis
+make dev-down        # Stop PostgreSQL + Redis
+make dev-run         # Regenerate Swagger + run server
+
+# Testing (enforces 80% coverage threshold)
+make test            # Run all tests with coverage report
+make clean           # Clear test cache + coverage output
+
+# Code generation
+make mock-gen        # Regenerate all mocks (go generate ./...)
+make swag-gen        # Regenerate Swagger docs
+
+# Database
+make migrate                    # Apply all pending migrations
+make new-schema name=<name>     # Create a new migration file pair
+
+# Docker
+make docker-build    # Build app + migration images
+make docker-up       # Start production stack
+make docker-down     # Stop production stack
+make docker-release  # Build and push images to Docker Hub
+
+# JWT keys
+make generate-rsa-key   # Generate private_key.pem + public_key.pem
+```
 
 ### Running Tests
 
 ```bash
-# Run all tests
-go test ./...
+# All tests (recommended — enforces coverage gate)
+make test
 
-# Run tests with coverage
-go test -cover ./...
+# Specific package
+go test ./internal/app/service/bookmark/...
+go test ./internal/app/handler/user/...
+go test ./internal/api/middleware/...
 
-# Run tests in a specific package
-go test ./internal/service/...
-go test ./internal/handler/...
-go test ./internal/test/endpoint/...
-
-# Run tests with verbose output
+# Verbose
 go test -v ./...
 ```
 
-### Project Dependencies
+### Database Migrations
 
-Main dependencies include:
-- `github.com/gin-gonic/gin` - HTTP web framework
-- `github.com/google/uuid` - UUID generation for instance IDs
-- `github.com/kelseyhightower/envconfig` - Environment variable configuration
-- `github.com/stretchr/testify` - Testing toolkit with assertions and mocks
+```bash
+# Apply migrations
+make migrate
+
+# Create a new migration
+make new-schema name=add_some_table
+# Creates: migrations/NNNNNN_add_some_table.up.sql
+#          migrations/NNNNNN_add_some_table.down.sql
+```
+
+### Docker
+
+```bash
+# Local dev (PostgreSQL + Redis only)
+make dev-up
+make dev-down
+
+# Full production stack
+make docker-up
+make docker-down
+```
+
+## Dependencies
+
+| Package | Purpose |
+|---|---|
+| `github.com/gin-gonic/gin` | HTTP web framework |
+| `gorm.io/gorm` + `gorm.io/driver/postgres` | ORM + PostgreSQL driver |
+| `github.com/redis/go-redis/v9` | Redis client |
+| `github.com/golang-jwt/jwt/v5` | JWT token generation & validation |
+| `github.com/golang-migrate/migrate/v4` | SQL schema migrations |
+| `github.com/swaggo/swag` + `gin-swagger` | Swagger doc generation & UI |
+| `github.com/go-playground/validator/v10` | Request validation |
+| `github.com/rs/zerolog` | Structured logging |
+| `golang.org/x/crypto` | bcrypt password hashing |
+| `github.com/google/uuid` | UUID generation |
+| `github.com/kelseyhightower/envconfig` | Environment variable configuration |
+| `github.com/stretchr/testify` | Test assertions & mocking |
+| `go.uber.org/mock` | Mock generation |
+| `github.com/alicebob/miniredis/v2` | In-memory Redis for tests |
 
 ## License
 
 [Add your license here]
-
-## Reference
-
-[Add your reference here]
