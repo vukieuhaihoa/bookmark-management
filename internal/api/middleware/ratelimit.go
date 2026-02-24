@@ -14,28 +14,28 @@ import (
 const (
 	RateLimitKeyFormat = "rate_limit:%s"
 
-	RateLimitIPKey       = "ip"
-	IP_RateLimitInterval = 1 * time.Minute
-	IP_RateLimitMaxCount = 100
+	RateLimitIPKey      = "ip"
+	IPRateLimitInterval = 1 * time.Minute
+	IPRateLimitMaxCount = 100
 
-	RateLimitUserIDKey       = "user_id"
-	UserID_RateLimitInterval = 1 * time.Second
-	UserID_RateLimitMaxCount = 20
+	RateLimitUserIDKey      = "user_id"
+	UserIDRateLimitInterval = 1 * time.Second
+	UserIDRateLimitMaxCount = 20
 )
 
 // keyFilter maps rate limit keys to functions that extract the relevant value and settings from the Gin context.
 var keyFilter = map[string]func(c *gin.Context) (string, time.Duration, int){
 	RateLimitIPKey: func(c *gin.Context) (string, time.Duration, int) {
-		return c.ClientIP(), IP_RateLimitInterval, IP_RateLimitMaxCount
+		return c.ClientIP(), IPRateLimitInterval, IPRateLimitMaxCount
 	},
 
 	RateLimitUserIDKey: func(c *gin.Context) (string, time.Duration, int) {
 		userID, err := utils.GetUserIDFromJWTClaims(c)
 		if err != nil {
 			log.Warn().Err(err).Msg("Failed to get user ID from JWT claims")
-			return c.ClientIP(), IP_RateLimitInterval, IP_RateLimitMaxCount
+			return c.ClientIP(), IPRateLimitInterval, IPRateLimitMaxCount
 		}
-		return userID, UserID_RateLimitInterval, UserID_RateLimitMaxCount
+		return userID, UserIDRateLimitInterval, UserIDRateLimitMaxCount
 	},
 }
 

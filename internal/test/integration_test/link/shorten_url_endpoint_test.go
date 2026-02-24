@@ -63,7 +63,7 @@ func TestShortenURLEndpoint_ShortenURL(t *testing.T) {
 			// Key insight: httptest.NewRequest always sets RemoteAddr = "192.0.2.1:1234", so gin's c.ClientIP() will always return 192.0.2.1. The rate limit key becomes rate_limit:192.0.2.1.
 			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
 				key := fmt.Sprintf(middleware.RateLimitKeyFormat, "192.0.2.1")
-				redisClient.Set(ctx, key, middleware.IP_RateLimitMaxCount, middleware.IP_RateLimitInterval)
+				redisClient.Set(ctx, key, middleware.IPRateLimitMaxCount, middleware.IPRateLimitInterval)
 				return redisClient
 			},
 

@@ -165,7 +165,7 @@ func TestUserEndpoint_UpdateProfile(t *testing.T) {
 
 			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
 				key := fmt.Sprintf(middleware.RateLimitKeyFormat, "4d9326d6-980c-4c62-9709-dbc70a82cbfe")
-				redisClient.Set(ctx, key, middleware.UserID_RateLimitMaxCount, middleware.UserID_RateLimitInterval)
+				redisClient.Set(ctx, key, middleware.UserIDRateLimitMaxCount, middleware.UserIDRateLimitInterval)
 				return redisClient
 			},
 

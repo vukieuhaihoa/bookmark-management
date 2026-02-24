@@ -29,7 +29,6 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 		setupMockRedis        func(ctx context.Context, redisClient *redis.Client) *redis.Client
 		setupTestHTTP         func(api api.Engine) *httptest.ResponseRecorder
 		setupDB               func(t *testing.T) *gorm.DB
-		setupCache            func(t *testing.T, ctx context.Context) *redis.Client
 		setupMockJWTValidator func(t *testing.T) *mocks.JWTValidator
 
 		expectedStatusCode int
@@ -49,11 +48,6 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 
 			setupDB: func(t *testing.T) *gorm.DB {
 				return fixture.NewFixture(t, &fixture.BookmarkCommonTestDB{})
-			},
-
-			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				redisClient := redisPkg.InitMockRedis(t)
-				return redisClient
 			},
 
 			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
@@ -81,8 +75,7 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 				return fixture.NewFixture(t, &fixture.BookmarkCommonTestDB{})
 			},
 
-			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				redisClient := redisPkg.InitMockRedis(t)
+			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
 				groupKey := "list_bookmarks_4d9326d6-980c-4c62-9709-dbc70a82cbfe"
 				cacheKey := "page_1_size_2_sortby_created_at_desc"
 				cachedData := `{"bookmarks":[{"id":"a1b2c3d4-e5f6-7890-abcd-ef0000000001","url":"https://example.com/testuser001","code":"p_1","description":"Bookmark for Test User 1 - record 1","created_at":"2023-01-01T00:00:00Z","updated_at":"2023-01-01T00:00:00Z"}],"total":1}`
@@ -116,10 +109,6 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 				return nil
 			},
 
-			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				return redisPkg.InitMockRedis(t)
-			},
-
 			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
 				jwtValidator := mocks.NewJWTValidator(t)
 				jwtValidator.On("ValidateToken", "valid_jwt_token").Return(jwt.MapClaims{"sub": "4d9326d6-980c-4c62-9709-dbc70a82cbfe"}, nil)
@@ -143,10 +132,6 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 
 			setupDB: func(t *testing.T) *gorm.DB {
 				return nil
-			},
-
-			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				return redisPkg.InitMockRedis(t)
 			},
 
 			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
@@ -174,10 +159,6 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 				return nil
 			},
 
-			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				return redisPkg.InitMockRedis(t)
-			},
-
 			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
 				jwtValidator := mocks.NewJWTValidator(t)
 				jwtValidator.On("ValidateToken", "token_without_user_id").Return(jwt.MapClaims{}, nil)
@@ -203,10 +184,6 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 				return nil
 			},
 
-			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				return redisPkg.InitMockRedis(t)
-			},
-
 			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
 				jwtValidator := mocks.NewJWTValidator(t)
 				jwtValidator.On("ValidateToken", "valid_jwt_token").Return(jwt.MapClaims{"sub": "4d9326d6-980c-4c62-9709-dbc70a82cbfe"}, nil)
@@ -230,7 +207,7 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 
 			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
 				key := fmt.Sprintf(middleware.RateLimitKeyFormat, "4d9326d6-980c-4c62-9709-dbc70a82cbfe")
-				redisClient.Set(ctx, key, middleware.UserID_RateLimitMaxCount, middleware.UserID_RateLimitInterval)
+				redisClient.Set(ctx, key, middleware.UserIDRateLimitMaxCount, middleware.UserIDRateLimitInterval)
 				return redisClient
 			},
 
@@ -265,14 +242,12 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 				return jwtValidator
 			},
 
-			expectedStatusCode: http.StatusUnauthorized,
-			expectedResponse:   `{"message":"Invalid token"}`,
 			setupDB: func(t *testing.T) *gorm.DB {
 				return nil
 			},
-			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				return redisPkg.InitMockRedis(t)
-			},
+
+			expectedStatusCode: http.StatusUnauthorized,
+			expectedResponse:   `{"message":"Invalid token"}`,
 		},
 		{
 			name: "list bookmarks failed - token does not contain user ID",
@@ -292,14 +267,12 @@ func TestBookmarkEndpoint_ListBookmarks(t *testing.T) {
 				return jwtValidator
 			},
 
-			expectedStatusCode: http.StatusUnauthorized,
-			expectedResponse:   `{"message":"Unauthorized"}`,
 			setupDB: func(t *testing.T) *gorm.DB {
 				return nil
 			},
-			setupCache: func(t *testing.T, ctx context.Context) *redis.Client {
-				return redisPkg.InitMockRedis(t)
-			},
+
+			expectedStatusCode: http.StatusUnauthorized,
+			expectedResponse:   `{"message":"Unauthorized"}`,
 		},
 	}
 

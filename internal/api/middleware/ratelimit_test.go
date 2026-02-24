@@ -30,15 +30,15 @@ func TestRateLimit_RateLimit(t *testing.T) {
 		expectedAborted  bool
 	}{
 		{
-			name: "first request - counter not exists (returns -1)",
+			name: "first request - counter not exists (return 0)",
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(http.MethodGet, "/api/resource", nil)
 			},
 			setupMockRepo: func(ctx context.Context) *mockRateLimit.Repository {
 				repoMock := mockRateLimit.NewRepository(t)
 				repoMock.On("GetCurrentRateLimit", mock.Anything, testKey).
-					Return(-1, nil)
-				repoMock.On("IncreaseRateLimit", mock.Anything, testKey, IP_RateLimitInterval).
+					Return(0, nil)
+				repoMock.On("IncreaseRateLimit", mock.Anything, testKey, IPRateLimitInterval).
 					Return(nil)
 				return repoMock
 			},
@@ -54,8 +54,8 @@ func TestRateLimit_RateLimit(t *testing.T) {
 			setupMockRepo: func(ctx context.Context) *mockRateLimit.Repository {
 				repoMock := mockRateLimit.NewRepository(t)
 				repoMock.On("GetCurrentRateLimit", ctx, testKey).
-					Return(IP_RateLimitMaxCount-1, nil)
-				repoMock.On("IncreaseRateLimit", ctx, testKey, IP_RateLimitInterval).
+					Return(IPRateLimitMaxCount-1, nil)
+				repoMock.On("IncreaseRateLimit", ctx, testKey, IPRateLimitInterval).
 					Return(nil)
 				return repoMock
 			},
@@ -71,7 +71,7 @@ func TestRateLimit_RateLimit(t *testing.T) {
 			setupMockRepo: func(ctx context.Context) *mockRateLimit.Repository {
 				repoMock := mockRateLimit.NewRepository(t)
 				repoMock.On("GetCurrentRateLimit", ctx, testKey).
-					Return(IP_RateLimitMaxCount, nil)
+					Return(IPRateLimitMaxCount, nil)
 				// IncreaseRateLimit must NOT be called when rate limit is exceeded
 				return repoMock
 			},
@@ -89,7 +89,7 @@ func TestRateLimit_RateLimit(t *testing.T) {
 				repoMock.On("GetCurrentRateLimit", ctx, testKey).
 					Return(-1, assert.AnError)
 				// currRate == -1, so rate limit check is skipped; Increase is still called
-				repoMock.On("IncreaseRateLimit", ctx, testKey, IP_RateLimitInterval).
+				repoMock.On("IncreaseRateLimit", ctx, testKey, IPRateLimitInterval).
 					Return(nil)
 				return repoMock
 			},
@@ -106,7 +106,7 @@ func TestRateLimit_RateLimit(t *testing.T) {
 				repoMock := mockRateLimit.NewRepository(t)
 				repoMock.On("GetCurrentRateLimit", ctx, testKey).
 					Return(5, nil)
-				repoMock.On("IncreaseRateLimit", ctx, testKey, IP_RateLimitInterval).
+				repoMock.On("IncreaseRateLimit", ctx, testKey, IPRateLimitInterval).
 					Return(assert.AnError)
 				return repoMock
 			},
