@@ -30,7 +30,11 @@ var keyFilter = map[string]func(c *gin.Context) (string, time.Duration, int){
 	},
 
 	RateLimitUserIDKey: func(c *gin.Context) (string, time.Duration, int) {
-		userID, _ := utils.GetUserIDFromJWTClaims(c)
+		userID, err := utils.GetUserIDFromJWTClaims(c)
+		if err != nil {
+			log.Warn().Err(err).Msg("Failed to get user ID from JWT claims")
+			return c.ClientIP(), IP_RateLimitInterval, IP_RateLimitMaxCount
+		}
 		return userID, UserID_RateLimitInterval, UserID_RateLimitMaxCount
 	},
 }
