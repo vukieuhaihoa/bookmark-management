@@ -23,7 +23,7 @@ func TestPasswordEndpoint_GeneratePassword(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		setupRedis    func(redisClient *redis.Client)
+		setupRedis    func(ctx context.Context, redisClient *redis.Client) *redis.Client
 		setupTestHTTP func(api api.Engine) *httptest.ResponseRecorder
 
 		expectedStatusCode      int
@@ -45,10 +45,10 @@ func TestPasswordEndpoint_GeneratePassword(t *testing.T) {
 		{
 			name: "rate limit exceeded",
 
-			setupRedis: func(redisClient *redis.Client) {
+			setupRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
 				key := fmt.Sprintf(middleware.RateLimitKeyFormat, "192.0.2.1")
-				redisClient.Set(context.Background(), key, middleware.RateLimitMaxCount, middleware.RateLimitInterval)
-
+				redisClient.Set(ctx, key, middleware.IPRateLimitMaxCount, middleware.IPRateLimitInterval)
+				return redisClient
 			},
 
 			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
@@ -67,9 +67,11 @@ func TestPasswordEndpoint_GeneratePassword(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
+			ctx := context.Background()
 			redisClient := redisPkg.InitMockRedis(t)
+
 			if tc.setupRedis != nil {
-				tc.setupRedis(redisClient)
+				redisClient = tc.setupRedis(ctx, redisClient)
 			}
 
 			apiEngine := api.New(&api.EngineOpts{

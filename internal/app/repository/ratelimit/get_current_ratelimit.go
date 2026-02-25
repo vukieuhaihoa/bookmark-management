@@ -2,6 +2,9 @@ package ratelimit
 
 import (
 	"context"
+	"errors"
+
+	"github.com/redis/go-redis/v9"
 )
 
 // GetCurrentRateLimit retrieves the current value of the rate limit counter for the specified key.
@@ -17,6 +20,10 @@ func (r *redisRepo) GetCurrentRateLimit(ctx context.Context, key string) (int, e
 	// Get the current value of the rate limit counter for the given key
 	current, err := r.c.Get(ctx, key).Int()
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			// If the key does not exist, return 0 as the current rate limit
+			return 0, nil
+		}
 		return -1, err
 	}
 

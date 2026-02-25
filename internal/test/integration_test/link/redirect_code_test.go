@@ -23,7 +23,7 @@ func TestGetURLEndpoint_RedirectCode(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		setupMockRedis func(ctx context.Context) *redis.Client
+		setupMockRedis func(ctx context.Context, redisClient *redis.Client) *redis.Client
 
 		setupTestHTTP func(api api.Engine) *httptest.ResponseRecorder
 
@@ -33,10 +33,9 @@ func TestGetURLEndpoint_RedirectCode(t *testing.T) {
 		{
 			name: "successful get original URL",
 
-			setupMockRedis: func(ctx context.Context) *redis.Client {
-				mockRedis := redisPkg.InitMockRedis(t)
-				mockRedis.Set(ctx, "abcd1234", "http://example.com", 1000)
-				return mockRedis
+			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
+				redisClient.Set(ctx, "abcd1234", "http://example.com", 1000)
+				return redisClient
 			},
 
 			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
@@ -52,10 +51,6 @@ func TestGetURLEndpoint_RedirectCode(t *testing.T) {
 		{
 			name: "code not found",
 
-			setupMockRedis: func(ctx context.Context) *redis.Client {
-				return redisPkg.InitMockRedis(t)
-			},
-
 			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
 				// Setup HTTP request and recorder
 				req := httptest.NewRequest("GET", "/v1/links/redirect/unknown", nil) // Body would be added
@@ -69,13 +64,10 @@ func TestGetURLEndpoint_RedirectCode(t *testing.T) {
 		{
 			name: "rate limit exceeded",
 
-			setupMockRedis: func(ctx context.Context) *redis.Client {
-				mockRedis := redisPkg.InitMockRedis(t)
-
+			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
 				key := fmt.Sprintf(middleware.RateLimitKeyFormat, "192.0.2.1")
-				mockRedis.Set(context.Background(), key, middleware.RateLimitMaxCount, middleware.RateLimitInterval)
-
-				return mockRedis
+				redisClient.Set(ctx, key, middleware.IPRateLimitMaxCount, middleware.IPRateLimitInterval)
+				return redisClient
 			},
 
 			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
@@ -95,7 +87,10 @@ func TestGetURLEndpoint_RedirectCode(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()
 
-			mockRedis := tc.setupMockRedis(ctx)
+			redisClient := redisPkg.InitMockRedis(t)
+			if tc.setupMockRedis != nil {
+				redisClient = tc.setupMockRedis(ctx, redisClient)
+			}
 
 			db := fixture.NewFixture(t, &fixture.BookmarkCommonTestDB{})
 
@@ -105,7 +100,7 @@ func TestGetURLEndpoint_RedirectCode(t *testing.T) {
 					ServiceName: "bookmark-service",
 					InstanceID:  "test_instance_id_1",
 				},
-				RedisClient:     mockRedis,
+				RedisClient:     redisClient,
 				SqlDB:           db,
 				RandomCodeGen:   utils.NewCodeGenerator(),
 				PasswordHashing: nil,

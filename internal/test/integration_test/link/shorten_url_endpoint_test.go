@@ -25,8 +25,8 @@ func TestShortenURLEndpoint_ShortenURL(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		setupRedis    func(redisClient *redis.Client)
-		setupTestHTTP func(api api.Engine) *httptest.ResponseRecorder
+		setupMockRedis func(ctx context.Context, redisClient *redis.Client) *redis.Client
+		setupTestHTTP  func(api api.Engine) *httptest.ResponseRecorder
 
 		expectedStatusCode int
 		expectedCodeLength int
@@ -61,9 +61,10 @@ func TestShortenURLEndpoint_ShortenURL(t *testing.T) {
 			name: "rate limit exceeded",
 
 			// Key insight: httptest.NewRequest always sets RemoteAddr = "192.0.2.1:1234", so gin's c.ClientIP() will always return 192.0.2.1. The rate limit key becomes rate_limit:192.0.2.1.
-			setupRedis: func(redisClient *redis.Client) {
+			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
 				key := fmt.Sprintf(middleware.RateLimitKeyFormat, "192.0.2.1")
-				redisClient.Set(context.Background(), key, middleware.RateLimitMaxCount, middleware.RateLimitInterval)
+				redisClient.Set(ctx, key, middleware.IPRateLimitMaxCount, middleware.IPRateLimitInterval)
+				return redisClient
 			},
 
 			setupTestHTTP: func(engine api.Engine) *httptest.ResponseRecorder {
@@ -81,10 +82,11 @@ func TestShortenURLEndpoint_ShortenURL(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
+			ctx := context.Background()
 			redisClient := redisPkg.InitMockRedis(t)
 
-			if tc.setupRedis != nil {
-				tc.setupRedis(redisClient)
+			if tc.setupMockRedis != nil {
+				redisClient = tc.setupMockRedis(ctx, redisClient)
 			}
 
 			apiEngine := api.New(&api.EngineOpts{

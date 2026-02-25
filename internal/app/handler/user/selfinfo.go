@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
-	"github.com/vukieuhaihoa/bookmark-management/internal/app/handler/utils"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/common"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 )
 
 // GetProfile generates a Gin framework handler that retrieves the profile of the authenticated user.

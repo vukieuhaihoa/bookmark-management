@@ -7,10 +7,10 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/vukieuhaihoa/bookmark-management/internal/app/handler/utils"
 	"github.com/vukieuhaihoa/bookmark-management/internal/app/model"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/common"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/dbutils"
+	"github.com/vukieuhaihoa/bookmark-management/pkg/utils"
 )
 
 // allowedSortFields maps the allowed sorting fields from query parameters to database column names.

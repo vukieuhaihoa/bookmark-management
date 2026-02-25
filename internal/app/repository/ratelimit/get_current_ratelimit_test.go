@@ -42,8 +42,8 @@ func TestRepository_GetCurrentRateLimit(t *testing.T) {
 				return redisClient
 			},
 
-			expectedCount: -1,
-			expectedError: redis.Nil,
+			expectedCount: 0,
+			expectedError: nil,
 		},
 		{
 			name: "failed rate limit retrieval due to closed Redis client",

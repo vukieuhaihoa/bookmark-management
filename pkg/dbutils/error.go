@@ -58,5 +58,5 @@ func filterForeignKeyError(err error) (bool, error) {
 }
 
 func filterInvalidSortFieldError(err error) (bool, error) {
-	return strings.Contains(strings.ToLower(err.Error()), "no such colum"), ErrInvalidSortField
+	return strings.Contains(strings.ToLower(err.Error()), "no such column"), ErrInvalidSortField
 }

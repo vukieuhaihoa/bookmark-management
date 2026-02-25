@@ -1,6 +1,8 @@
 package user
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -8,8 +10,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/vukieuhaihoa/bookmark-management/internal/api"
+	"github.com/vukieuhaihoa/bookmark-management/internal/api/middleware"
 	"github.com/vukieuhaihoa/bookmark-management/internal/test/fixture"
 	"github.com/vukieuhaihoa/bookmark-management/pkg/jwtutils/mocks"
 	redisPkg "github.com/vukieuhaihoa/bookmark-management/pkg/redis"
@@ -20,6 +24,8 @@ func TestUserEndpoint_UpdateProfile(t *testing.T) {
 
 	testCases := []struct {
 		name string
+
+		setupMockRedis func(ctx context.Context, redisClient *redis.Client) *redis.Client
 
 		setupTestHTTP func(api api.Engine) *httptest.ResponseRecorder
 
@@ -154,6 +160,33 @@ func TestUserEndpoint_UpdateProfile(t *testing.T) {
 			expectedCode:     http.StatusBadRequest,
 			expectedResponse: `"message":"email already exists"`,
 		},
+		{
+			name: "rate limit exceeded",
+
+			setupMockRedis: func(ctx context.Context, redisClient *redis.Client) *redis.Client {
+				key := fmt.Sprintf(middleware.RateLimitKeyFormat, "4d9326d6-980c-4c62-9709-dbc70a82cbfe")
+				redisClient.Set(ctx, key, middleware.UserIDRateLimitMaxCount, middleware.UserIDRateLimitInterval)
+				return redisClient
+			},
+
+			setupTestHTTP: func(api api.Engine) *httptest.ResponseRecorder {
+				// Setup HTTP request and recorder
+				req := httptest.NewRequest("PUT", "/v1/self/info", strings.NewReader(`{"display_name":"Test User 1 Updated","email":"testuser001updated@example.com"}`))
+				req.Header.Set("Authorization", "Bearer valid_jwt_token")
+				respRec := httptest.NewRecorder()
+				api.ServeHTTP(respRec, req)
+				return respRec
+			},
+
+			setupMockJWTValidator: func(t *testing.T) *mocks.JWTValidator {
+				jwtValidator := mocks.NewJWTValidator(t)
+				jwtValidator.On("ValidateToken", "valid_jwt_token").Return(jwt.MapClaims{"sub": "4d9326d6-980c-4c62-9709-dbc70a82cbfe"}, nil)
+				return jwtValidator
+			},
+
+			expectedCode:     http.StatusTooManyRequests,
+			expectedResponse: `"error":"Too many requests. Please try again later."`,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -163,6 +196,11 @@ func TestUserEndpoint_UpdateProfile(t *testing.T) {
 
 			db := fixture.NewFixture(t, &fixture.UserCommonTestDB{})
 			jwtValidator := tc.setupMockJWTValidator(t)
+			redisClient := redisPkg.InitMockRedis(t)
+
+			if tc.setupMockRedis != nil {
+				redisClient = tc.setupMockRedis(context.Background(), redisClient)
+			}
 
 			// Initialize API engine
 			apiEngine := api.New(&api.EngineOpts{
@@ -171,7 +209,7 @@ func TestUserEndpoint_UpdateProfile(t *testing.T) {
 					ServiceName: "bookmark_service",
 					InstanceID:  "test_instance_id_1",
 				},
-				RedisClient:     redisPkg.InitMockRedis(t),
+				RedisClient:     redisClient,
 				SqlDB:           db,
 				RandomCodeGen:   nil,
 				PasswordHashing: nil,
